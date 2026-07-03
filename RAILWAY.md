@@ -1,7 +1,10 @@
 # Railway deployment guide — Zrochet
 
+## GitHub repo
+https://github.com/2210080030aids-netizen/zrochet_web
+
 ## Live site
-https://zrochetcurserrailway-production.up.railway.app
+Set after Railway deploy — your `*.up.railway.app` domain
 
 ---
 
@@ -17,7 +20,7 @@ git push origin main
 ### 2. Create Railway project
 1. [railway.app](https://railway.app) → sign in with GitHub
 2. **New Project** → **Deploy from GitHub repo**
-3. Select **Zrochet_Curser_railway**
+3. Select **zrochet_web** (`2210080030aids-netizen/zrochet_web`)
 
 ### 3. Add PostgreSQL
 1. **+ New** → **Database** → **PostgreSQL**
