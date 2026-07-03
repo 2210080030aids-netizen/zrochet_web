@@ -1,6 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
+
+[build.env]
+NPM_CONFIG_OPTIONAL = "true"
+NPM_CONFIG_PRODUCTION = "false"
 
 [deploy]
 startCommand = "npm run start"
