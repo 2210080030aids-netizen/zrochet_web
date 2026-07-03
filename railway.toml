@@ -1,9 +1,6 @@
 [build]
-builder = "nixpacks"
-
-[build.env]
-NPM_CONFIG_OPTIONAL = "true"
-NPM_CONFIG_PRODUCTION = "false"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "npm run start"

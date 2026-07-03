@@ -47,7 +47,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   return NextResponse.json({
     order: {
       ...order,
-      items: order.items as CartItem[],
+      items: order.items as unknown as CartItem[],
     },
   });
 }

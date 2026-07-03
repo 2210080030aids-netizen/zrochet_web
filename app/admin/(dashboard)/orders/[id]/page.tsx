@@ -17,7 +17,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
   const order = await prisma.order.findUnique({ where: { id } });
   if (!order) notFound();
 
-  const items = order.items as CartItem[];
+  const items = order.items as unknown as CartItem[];
 
   return (
     <div>

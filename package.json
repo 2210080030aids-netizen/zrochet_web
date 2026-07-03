@@ -4,9 +4,9 @@
   "scripts": {
     "dev": "prisma generate && npm run generate:catalog && next dev",
     "dev:clean": "node scripts/clean-next.js && npm run dev",
-    "build": "prisma generate && npm run generate:catalog && next build",
+    "build": "prisma generate && node scripts/ensure-tailwind-oxide.js && npm run generate:catalog && next build",
     "start": "node scripts/start-production.js",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node scripts/ensure-tailwind-oxide.js",
     "lint": "next lint",
     "generate:catalog": "node scripts/generate-catalog.js",
     "generate:minibags": "node scripts/generate-catalog.js",
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
-    "@tailwindcss/postcss": "^4.1.8",
+    "@tailwindcss/postcss": "4.3.1",
     "jspdf": "^3.0.1",
     "next": "^15.3.3",
     "nodemailer": "^7.0.5",
@@ -26,7 +26,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.8",
+    "tailwindcss": "4.3.1",
     "typescript": "^5.8.3"
   },
   "devDependencies": {

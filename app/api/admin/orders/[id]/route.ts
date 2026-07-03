@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   return NextResponse.json({
-    order: { ...order, items: order.items as CartItem[] },
+    order: { ...order, items: order.items as unknown as CartItem[] },
   });
 }
 
@@ -62,7 +62,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   const receiptPdf = generateReceiptPdf({
     ...updated,
-    items: updated.items as CartItem[],
+    items: updated.items as unknown as CartItem[],
   });
 
   const emailResult = await sendThankYouEmail({

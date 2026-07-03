@@ -1,9 +1,0 @@
-# Ensure Tailwind native bindings install on Linux (Railway)
-[phases.install]
-cmds = ["npm install --include=optional"]
-
-[phases.build]
-cmds = ["npm run build"]
-
-[start]
-cmd = "npm run start"

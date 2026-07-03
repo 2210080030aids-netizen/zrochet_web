@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   const pdf = generateReceiptPdf({
     ...order,
-    items: order.items as CartItem[],
+    items: order.items as unknown as CartItem[],
   });
 
   return new NextResponse(new Uint8Array(pdf), {
