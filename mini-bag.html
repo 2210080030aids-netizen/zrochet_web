@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View details and photos of a handcrafted Zrochet mini bag.">
+  <title>Mini Bag — Zrochet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="detail">
+  <header class="navbar" id="navbar">
+    <div class="container navbar__inner">
+      <a href="index.html" class="navbar__logo">Zrochet</a>
+
+      <button class="navbar__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="navbar__nav" id="navMenu">
+        <a href="index.html#home" class="nav-link">Home</a>
+        <a href="index.html#shop" class="nav-link">Shop</a>
+        <a href="mini-bags.html" class="nav-link active">Mini Bags</a>
+        <a href="index.html#about" class="nav-link">About</a>
+        <a href="index.html#contact" class="nav-link">Contact</a>
+      </nav>
+
+      <button class="navbar__cart" id="cartBtn" aria-label="Shopping cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="minibag-page">
+    <section class="minibag-hero section">
+      <div class="container">
+        <nav class="breadcrumb fade-in" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span aria-hidden="true">/</span>
+          <a href="mini-bags.html">Mini Bags</a>
+          <span aria-hidden="true">/</span>
+          <span id="breadcrumbName" aria-current="page">Product</span>
+        </nav>
+      </div>
+    </section>
+
+    <section class="section product-detail-section" id="productDetail" hidden>
+      <div class="container product-detail">
+        <div class="product-detail__header fade-in">
+          <span class="product-detail__id" id="detailId"></span>
+          <h1 class="product-detail__name" id="detailName"></h1>
+        </div>
+
+        <div class="product-detail__images fade-in" id="productImages" aria-label="Product photos"></div>
+
+        <div class="product-detail__info fade-in">
+          <p class="product-detail__price" id="detailPrice"></p>
+          <p class="product-detail__desc" id="detailDescription"></p>
+
+          <ul class="product-detail__features">
+            <li>100% handmade crochet</li>
+            <li>Premium soft yarn</li>
+            <li>One-of-a-kind artisan piece</li>
+          </ul>
+
+          <button type="button" class="btn btn--primary product-detail__cart" id="addToCartBtn">Add to Cart</button>
+          <a href="mini-bags.html" class="btn btn--outline product-detail__back">← All Mini Bags</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="productNotFound" hidden>
+      <div class="container minibag-empty fade-in visible">
+        <h2 class="section-title">Product not found</h2>
+        <p>This mini bag could not be loaded. It may have been removed or the link is incorrect.</p>
+        <a href="mini-bags.html" class="btn btn--outline">Browse Mini Bags</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom">
+        <p>&copy; 2026 Zrochet. All rights reserved.</p>
+        <a href="mini-bags.html">All Mini Bags</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="mini-bags.js"></script>
+</body>
+</html>

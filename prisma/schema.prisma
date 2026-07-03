@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Collection {
+  slug         String    @id
+  name         String
+  label        String
+  pattern      String?
+  defaultPrice Int       @default(500)
+  sortOrder    Int       @default(0)
+  products     Product[]
+}
+
+model Product {
+  productId       String
+  categorySlug    String
+  collection      Collection @relation(fields: [categorySlug], references: [slug], onDelete: Cascade)
+  name            String
+  price           Int
+  originalPrice   Int?
+  discountPercent Int        @default(0)
+  currency        String     @default("INR")
+  description     String
+  material        String     @default("Premium cotton-blend crochet yarn")
+  dimensions      String     @default("18 × 14 × 8 cm (approx.)")
+  care            String     @default("Spot clean only. Store in a dry place away from direct sunlight.")
+  colors          Json       @default("[]")
+  colorVariants   Json       @default("[]")
+  sizes           Json       @default("[\"One Size\"]")
+  rating          Float      @default(4.8)
+  reviewCount     Int        @default(24)
+  inStock         Boolean    @default(true)
+  deliveryDays    String     @default("3–5 business days")
+  media           Json       @default("[]")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@id([categorySlug, productId])
+}
+
+model SiteSettings {
+  id         Int    @id @default(1)
+  email      String @default("hello@zrochet.com")
+  phone      String @default("+91 98765 43210")
+  address    String @default("123 Artisan Lane, India")
+  footerText String @default("Handcrafted crochet creations made with love, patience, and a touch of magic.")
+  heroImage  String @default("/images/welcome.png")
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  address       String
+  items         Json
+  subtotal      Int
+  currency      String    @default("INR")
+  status        String    @default("pending")
+  paymentMethod String?   @default("upi")
+  paidAt        DateTime?
+  approvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+}

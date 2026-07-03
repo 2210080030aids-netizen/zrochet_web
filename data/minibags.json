@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-06-20T13:18:12.085Z",
+  "products": [
+    {
+      "id": "B1",
+      "name": "Bee Stripe Mini Bag",
+      "price": 500,
+      "currency": "INR",
+      "description": "Bold yellow-and-black striped crochet mini bag with a chain strap — a cheerful statement piece for any outfit.",
+      "images": [
+        "images/B1_minibag (1).png",
+        "images/B1_minibag (2).png",
+        "images/B1_minibag (3).png",
+        "images/B1_minibag (4).png"
+      ]
+    },
+    {
+      "id": "B2",
+      "name": "Classic Mini Bag",
+      "price": 500,
+      "currency": "INR",
+      "description": "A timeless handcrafted mini bag with soft texture and artisan charm, sized perfectly for your essentials.",
+      "images": [
+        "images/B2_minibag (1).png",
+        "images/B2_minibag (2).png",
+        "images/B2_minibag (3).png",
+        "images/B2_minibag (4).png"
+      ]
+    }
+  ]
+}

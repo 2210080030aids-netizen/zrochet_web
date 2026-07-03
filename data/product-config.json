@@ -1,0 +1,130 @@
+{
+  "B1": {
+    "name": "Bee Stripe Mini Bag",
+    "collection": "Mini Bag Collection",
+    "price": 500,
+    "originalPrice": 650,
+    "discountPercent": 23,
+    "description": "Bold yellow-and-black striped crochet mini bag with a chain strap. A cheerful statement piece handcrafted for everyday elegance.",
+    "material": "Premium chunky cotton-blend yarn with metal chain strap",
+    "dimensions": "16 × 12 × 10 cm",
+    "colors": ["Yellow / Black"],
+    "colorVariants": [
+      { "name": "Yellow / Black", "swatch": "#EAB308", "productId": "B1" },
+      { "name": "Blue", "swatch": "#2563EB", "productId": "B2" }
+    ],
+    "rating": 4.9,
+    "reviewCount": 38,
+    "imageLabels": ["Front View", "Back View", "Left Side", "Right Side"]
+  },
+  "B2": {
+    "name": "Blue Classic Mini Bag",
+    "collection": "Mini Bag Collection",
+    "price": 500,
+    "description": "A timeless blue handcrafted mini bag with soft texture and artisan charm, sized perfectly for your essentials.",
+    "colors": ["Blue"],
+    "colorVariants": [
+      { "name": "Yellow / Black", "swatch": "#EAB308", "productId": "B1" },
+      { "name": "Blue", "swatch": "#2563EB", "productId": "B2" }
+    ],
+    "rating": 4.7,
+    "reviewCount": 21,
+    "imageLabels": ["Front View", "Back View", "Left Side", "Right Side"]
+  },
+  "B3": {
+    "name": "Soirée Glam Party Bag",
+    "collection": "Party Bag Collection",
+    "price": 1100,
+    "originalPrice": 1400,
+    "discountPercent": 21,
+    "description": "An elegant party-ready crochet bag designed for evening occasions. Structured silhouette with premium finish.",
+    "dimensions": "22 × 16 × 10 cm",
+    "colors": ["Champagne"],
+    "colorVariants": [
+      { "name": "Champagne", "swatch": "#D4AF37", "productId": "B3" },
+      { "name": "Pearl White", "swatch": "#F5F0E8", "productId": "B4" }
+    ],
+    "rating": 4.8,
+    "reviewCount": 15
+  },
+  "B4": {
+    "name": "Pearl White Party Bag",
+    "collection": "Party Bag Collection",
+    "price": 1100,
+    "description": "Sophisticated party bag with intricate crochet detailing — perfect for weddings, dinners, and special events.",
+    "colors": ["Pearl White"],
+    "colorVariants": [
+      { "name": "Champagne", "swatch": "#D4AF37", "productId": "B3" },
+      { "name": "Pearl White", "swatch": "#F5F0E8", "productId": "B4" }
+    ],
+    "rating": 4.6,
+    "reviewCount": 12
+  },
+  "B5": {
+    "name": "Oreo Swirl Signature Bag",
+    "collection": "Oreo Signature Collection",
+    "price": 700,
+    "description": "Signature black-and-white swirl crochet bag with a bold, modern aesthetic inspired by classic contrast.",
+    "colors": ["Black / White"],
+    "colorVariants": [
+      { "name": "Black / White", "swatch": "#1F2937", "productId": "B5" },
+      { "name": "Charcoal / Cream", "swatch": "#9CA3AF", "productId": "B6" }
+    ],
+    "videoLabel": "Product Video",
+    "rating": 4.9,
+    "reviewCount": 27
+  },
+  "B6": {
+    "name": "Oreo Classic Signature Bag",
+    "collection": "Oreo Signature Collection",
+    "price": 700,
+    "description": "A refined take on the Oreo signature line — structured, versatile, and unmistakably Zrochet.",
+    "colors": ["Charcoal / Cream"],
+    "colorVariants": [
+      { "name": "Black / White", "swatch": "#1F2937", "productId": "B5" },
+      { "name": "Charcoal / Cream", "swatch": "#9CA3AF", "productId": "B6" }
+    ],
+    "rating": 4.7,
+    "reviewCount": 19
+  },
+  "B7": {
+    "name": "Chic Urban Side Sling",
+    "collection": "Side Bag Collection",
+    "price": 850,
+    "description": "A sleek side-sling crochet bag with a relaxed silhouette — perfect for hands-free days and effortless street style.",
+    "dimensions": "20 × 14 × 8 cm",
+    "colors": ["Warm Tan"],
+    "colorVariants": [
+      { "name": "Warm Tan", "swatch": "#C4A882", "productId": "B7" },
+      { "name": "Soft Blush", "swatch": "#E8C4B8", "productId": "B8" }
+    ],
+    "imageLabels": ["Front View", "Side View"],
+    "rating": 4.8,
+    "reviewCount": 16
+  },
+  "B8": {
+    "name": "Blush Side Crossbody",
+    "collection": "Side Bag Collection",
+    "price": 850,
+    "description": "Soft-toned side bag with artisan crochet texture — lightweight, versatile, and made to move with you.",
+    "dimensions": "20 × 14 × 8 cm",
+    "colors": ["Soft Blush"],
+    "colorVariants": [
+      { "name": "Warm Tan", "swatch": "#C4A882", "productId": "B7" },
+      { "name": "Soft Blush", "swatch": "#E8C4B8", "productId": "B8" }
+    ],
+    "rating": 4.7,
+    "reviewCount": 11
+  },
+  "B9": {
+    "name": "Artisan Top-Handle Bag",
+    "collection": "Handle Bag Collection",
+    "price": 650,
+    "description": "Elegant top-handle crochet bag with structured form — a refined everyday carry with boutique charm.",
+    "dimensions": "18 × 13 × 9 cm",
+    "colors": ["Natural"],
+    "imageLabels": ["Front View", "Detail View"],
+    "rating": 4.9,
+    "reviewCount": 22
+  }
+}

@@ -1,0 +1,479 @@
+{
+  "generatedAt": "2026-07-03T03:38:11.687Z",
+  "categories": [
+    {
+      "slug": "mini-bags",
+      "name": "Mini Bags",
+      "label": "Mini Bag Collection"
+    },
+    {
+      "slug": "party-bags",
+      "name": "Party Bags",
+      "label": "Party Bag Collection"
+    },
+    {
+      "slug": "oreo-bags",
+      "name": "Oreo Signature Bags",
+      "label": "Oreo Signature Collection"
+    },
+    {
+      "slug": "side-bags",
+      "name": "Side Bags",
+      "label": "Side Bag Collection"
+    },
+    {
+      "slug": "handle-bags",
+      "name": "Handle Bags",
+      "label": "Handle Bag Collection"
+    }
+  ],
+  "products": [
+    {
+      "id": "B9",
+      "category": "handle-bags",
+      "collection": "Handle Bag Collection",
+      "name": "Artisan Top-Handle Bag",
+      "price": 650,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "Elegant top-handle crochet bag with structured form — a refined everyday carry with boutique charm.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "18 × 13 × 9 cm",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Natural"
+      ],
+      "colorVariants": [],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.9,
+      "reviewCount": 22,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B9_handle%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B9_handle%20(2).png",
+          "label": "Detail View"
+        }
+      ]
+    },
+    {
+      "id": "B1",
+      "category": "mini-bags",
+      "collection": "Mini Bag Collection",
+      "name": "Bee Stripe Mini Bag",
+      "price": 500,
+      "originalPrice": 650,
+      "discountPercent": 23,
+      "currency": "INR",
+      "description": "Bold yellow-and-black striped crochet mini bag with a chain strap. A cheerful statement piece handcrafted for everyday elegance.",
+      "material": "Premium chunky cotton-blend yarn with metal chain strap",
+      "dimensions": "16 × 12 × 10 cm",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Yellow / Black"
+      ],
+      "colorVariants": [
+        {
+          "name": "Yellow / Black",
+          "swatch": "#EAB308",
+          "productId": "B1"
+        },
+        {
+          "name": "Blue",
+          "swatch": "#2563EB",
+          "productId": "B2"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.9,
+      "reviewCount": 38,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B1_minibag%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B1_minibag%20(2).png",
+          "label": "Back View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B1_minibag%20(3).png",
+          "label": "Left Side"
+        },
+        {
+          "type": "image",
+          "src": "/images/B1_minibag%20(4).png",
+          "label": "Right Side"
+        }
+      ]
+    },
+    {
+      "id": "B2",
+      "category": "mini-bags",
+      "collection": "Mini Bag Collection",
+      "name": "Blue Classic Mini Bag",
+      "price": 500,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "A timeless blue handcrafted mini bag with soft texture and artisan charm, sized perfectly for your essentials.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "18 × 14 × 8 cm (approx.)",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Blue"
+      ],
+      "colorVariants": [
+        {
+          "name": "Yellow / Black",
+          "swatch": "#EAB308",
+          "productId": "B1"
+        },
+        {
+          "name": "Blue",
+          "swatch": "#2563EB",
+          "productId": "B2"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.7,
+      "reviewCount": 21,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B2_minibag%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B2_minibag%20(2).png",
+          "label": "Back View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B2_minibag%20(3).png",
+          "label": "Left Side"
+        },
+        {
+          "type": "image",
+          "src": "/images/B2_minibag%20(4).png",
+          "label": "Right Side"
+        }
+      ]
+    },
+    {
+      "id": "B5",
+      "category": "oreo-bags",
+      "collection": "Oreo Signature Collection",
+      "name": "Oreo Swirl Signature Bag",
+      "price": 700,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "Signature black-and-white swirl crochet bag with a bold, modern aesthetic inspired by classic contrast.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "18 × 14 × 8 cm (approx.)",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Black / White"
+      ],
+      "colorVariants": [
+        {
+          "name": "Black / White",
+          "swatch": "#1F2937",
+          "productId": "B5"
+        },
+        {
+          "name": "Charcoal / Cream",
+          "swatch": "#9CA3AF",
+          "productId": "B6"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.9,
+      "reviewCount": 27,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B5_oreo(1).png.jpeg",
+          "label": "Front View"
+        },
+        {
+          "type": "video",
+          "src": "/images/B5_oreo_video.mp4",
+          "label": "Product Video",
+          "poster": "/images/B5_oreo(1).png.jpeg"
+        }
+      ]
+    },
+    {
+      "id": "B6",
+      "category": "oreo-bags",
+      "collection": "Oreo Signature Collection",
+      "name": "Oreo Classic Signature Bag",
+      "price": 700,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "A refined take on the Oreo signature line — structured, versatile, and unmistakably Zrochet.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "18 × 14 × 8 cm (approx.)",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Charcoal / Cream"
+      ],
+      "colorVariants": [
+        {
+          "name": "Black / White",
+          "swatch": "#1F2937",
+          "productId": "B5"
+        },
+        {
+          "name": "Charcoal / Cream",
+          "swatch": "#9CA3AF",
+          "productId": "B6"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.7,
+      "reviewCount": 19,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B6_oreo.png",
+          "label": "Front View"
+        }
+      ]
+    },
+    {
+      "id": "B3",
+      "category": "party-bags",
+      "collection": "Party Bag Collection",
+      "name": "Soirée Glam Party Bag",
+      "price": 1100,
+      "originalPrice": 1400,
+      "discountPercent": 21,
+      "currency": "INR",
+      "description": "An elegant party-ready crochet bag designed for evening occasions. Structured silhouette with premium finish.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "22 × 16 × 10 cm",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Champagne"
+      ],
+      "colorVariants": [
+        {
+          "name": "Champagne",
+          "swatch": "#D4AF37",
+          "productId": "B3"
+        },
+        {
+          "name": "Pearl White",
+          "swatch": "#F5F0E8",
+          "productId": "B4"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.8,
+      "reviewCount": 15,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B3_partybag%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B3_partybag%20(2).png",
+          "label": "Back View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B3_partybag%20(3).png",
+          "label": "Side View"
+        }
+      ]
+    },
+    {
+      "id": "B4",
+      "category": "party-bags",
+      "collection": "Party Bag Collection",
+      "name": "Pearl White Party Bag",
+      "price": 1100,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "Sophisticated party bag with intricate crochet detailing — perfect for weddings, dinners, and special events.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "18 × 14 × 8 cm (approx.)",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Pearl White"
+      ],
+      "colorVariants": [
+        {
+          "name": "Champagne",
+          "swatch": "#D4AF37",
+          "productId": "B3"
+        },
+        {
+          "name": "Pearl White",
+          "swatch": "#F5F0E8",
+          "productId": "B4"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.6,
+      "reviewCount": 12,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B4_partybag%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B4_partybag%20(2).png",
+          "label": "Back View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B4_partybag%20(3).png",
+          "label": "Side View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B4_partybag%20(4).png",
+          "label": "Detail View"
+        }
+      ]
+    },
+    {
+      "id": "B7",
+      "category": "side-bags",
+      "collection": "Side Bag Collection",
+      "name": "Chic Urban Side Sling",
+      "price": 850,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "A sleek side-sling crochet bag with a relaxed silhouette — perfect for hands-free days and effortless street style.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "20 × 14 × 8 cm",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Warm Tan"
+      ],
+      "colorVariants": [
+        {
+          "name": "Warm Tan",
+          "swatch": "#C4A882",
+          "productId": "B7"
+        },
+        {
+          "name": "Soft Blush",
+          "swatch": "#E8C4B8",
+          "productId": "B8"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.8,
+      "reviewCount": 16,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B7_side%20(1).png",
+          "label": "Front View"
+        },
+        {
+          "type": "image",
+          "src": "/images/B7_side%20(2).png",
+          "label": "Side View"
+        }
+      ]
+    },
+    {
+      "id": "B8",
+      "category": "side-bags",
+      "collection": "Side Bag Collection",
+      "name": "Blush Side Crossbody",
+      "price": 850,
+      "originalPrice": null,
+      "discountPercent": 0,
+      "currency": "INR",
+      "description": "Soft-toned side bag with artisan crochet texture — lightweight, versatile, and made to move with you.",
+      "material": "Premium cotton-blend crochet yarn",
+      "dimensions": "20 × 14 × 8 cm",
+      "care": "Spot clean only. Store in a dry place away from direct sunlight.",
+      "colors": [
+        "Soft Blush"
+      ],
+      "colorVariants": [
+        {
+          "name": "Warm Tan",
+          "swatch": "#C4A882",
+          "productId": "B7"
+        },
+        {
+          "name": "Soft Blush",
+          "swatch": "#E8C4B8",
+          "productId": "B8"
+        }
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "rating": 4.7,
+      "reviewCount": 11,
+      "inStock": true,
+      "deliveryDays": "3–5 business days",
+      "media": [
+        {
+          "type": "image",
+          "src": "/images/B8_side.png",
+          "label": "Front View"
+        }
+      ]
+    }
+  ]
+}

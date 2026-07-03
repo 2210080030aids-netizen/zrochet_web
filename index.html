@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Zrochet — Handcrafted crochet bags, purses, flowers, and gifts made with love.">
+  <title>Zrochet — Handcrafted Crochet Creations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sticky Navbar -->
+  <header class="navbar" id="navbar">
+    <div class="container navbar__inner">
+      <a href="#" class="navbar__logo">Zrochet</a>
+
+      <nav class="navbar__nav" id="navMenu">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#shop" class="nav-link">Shop</a>
+        <a href="#collections" class="nav-link">Collections</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+
+      <button class="navbar__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+      <div class="container hero__grid">
+        <div class="hero__content fade-in">
+          <span class="hero__eyebrow">Artisan Made · One of a Kind</span>
+          <h1 class="hero__title">Handcrafted Crochet Creations</h1>
+          <p class="hero__text">
+            Discover beautifully handmade crochet bags, purses, and thoughtful gifts —
+            each piece woven with care, warmth, and timeless charm.
+          </p>
+          <a href="#shop" class="btn btn--primary">Shop Now</a>
+        </div>
+        <div class="hero__image fade-in">
+          <div class="hero__image-frame">
+            <img
+              src="images/welcome.png"
+              alt="Handcrafted crochet handbag in warm neutral tones"
+              loading="eager"
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories section" id="collections">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">Browse by Style</span>
+          <h2 class="section-title">Our Collections</h2>
+        </div>
+        <div class="categories__grid">
+          <a href="#shop" class="category-card fade-in">
+            <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&q=80" alt="Petite Charm Mini Bag">
+            <div class="category-card__overlay">
+              <h3>Mini Bag</h3>
+              <p class="category-card__price">₹500</p>
+              <span>Shop now →</span>
+            </div>
+          </a>
+          <a href="#shop" class="category-card fade-in">
+            <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80" alt="Soirée Glam Party Bag">
+            <div class="category-card__overlay">
+              <h3>Party Bag</h3>
+              <p class="category-card__price">₹1,100</p>
+              <span>Shop now →</span>
+            </div>
+          </a>
+          <a href="#shop" class="category-card fade-in">
+            <img src="https://images.unsplash.com/photo-1615886315156-58a204a488d6?w=600&q=80" alt="Oreo Swirl Signature Bag">
+            <div class="category-card__overlay">
+              <h3>Oreo Signature Bag</h3>
+              <p class="category-card__price">₹700</p>
+              <span>Shop now →</span>
+            </div>
+          </a>
+          <a href="#shop" class="category-card fade-in">
+            <img src="images/B9_handle (1).png" alt="Artisan Top-Handle Bag">
+            <div class="category-card__overlay">
+              <h3>Handle Bag</h3>
+              <p class="category-card__price">₹650</p>
+              <span>Shop now →</span>
+            </div>
+          </a>
+          <a href="#shop" class="category-card fade-in">
+            <img src="images/B7_side (1).png" alt="Chic Urban Side Sling">
+            <div class="category-card__overlay">
+              <h3>Side bag</h3>
+              <p class="category-card__price">₹850</p>
+              <span>Shop now →</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="products section" id="shop">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">Curated for You</span>
+          <h2 class="section-title">Featured Products</h2>
+          <p class="section-desc">Each piece is lovingly crafted by hand — no two are ever exactly alike.</p>
+        </div>
+        <div class="products__grid" id="productsGrid">
+          <article class="product-card fade-in" data-id="1" data-name="Sunset Tote Bag" data-price="68">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1591561954557-26941168b49e?w=500&q=80" alt="Sunset Tote Bag">
+              <span class="product-card__badge">Bestseller</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Sunset Tote Bag</h3>
+              <p class="product-card__price">$68.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="2" data-name="Cream Clutch Purse" data-price="45">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80" alt="Cream Clutch Purse">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Cream Clutch Purse</h3>
+              <p class="product-card__price">$45.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="3" data-name="Blush Rose Bouquet" data-price="32">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&q=80" alt="Blush Rose Bouquet">
+              <span class="product-card__badge">New</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Blush Rose Bouquet</h3>
+              <p class="product-card__price">$32.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="4" data-name="Mini Heart Keychain" data-price="18">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1456324504439-367cee43d842?w=500&q=80" alt="Mini Heart Keychain">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Mini Heart Keychain</h3>
+              <p class="product-card__price">$18.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="5" data-name="Woven Market Bag" data-price="72">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1615886315156-58a204a488d6?w=500&q=80" alt="Woven Market Bag">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Woven Market Bag</h3>
+              <p class="product-card__price">$72.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="6" data-name="Latte Crossbody" data-price="58">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500&q=80" alt="Latte Crossbody">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Latte Crossbody</h3>
+              <p class="product-card__price">$58.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="7" data-name="Garden Daisy Set" data-price="28">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" alt="Garden Daisy Set">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Garden Daisy Set</h3>
+              <p class="product-card__price">$28.00</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="B7" data-name="Chic Urban Side Sling" data-price="850">
+            <div class="product-card__image">
+              <img src="images/B7_side (1).png" alt="Chic Urban Side Sling">
+              <span class="product-card__badge">New</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Chic Urban Side Sling</h3>
+              <p class="product-card__price">₹850</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="B8" data-name="Blush Side Crossbody" data-price="850">
+            <div class="product-card__image">
+              <img src="images/B8_side.png" alt="Blush Side Crossbody">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Blush Side Crossbody</h3>
+              <p class="product-card__price">₹850</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+
+          <article class="product-card fade-in" data-id="B9" data-name="Artisan Top-Handle Bag" data-price="650">
+            <div class="product-card__image">
+              <img src="images/B9_handle (1).png" alt="Artisan Top-Handle Bag">
+              <span class="product-card__badge">Bestseller</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Artisan Top-Handle Bag</h3>
+              <p class="product-card__price">₹650</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Side Bag Collection -->
+    <section class="collection-spotlight section" id="side-bags">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">Side Bag Collection</span>
+          <h2 class="section-title">Chic Urban Side Slings</h2>
+          <p class="section-desc">Hands-free crochet crossbodies designed for everyday ease — lightweight, stylish, and uniquely yours.</p>
+        </div>
+        <div class="products__grid">
+          <article class="product-card fade-in" data-id="B7" data-name="Chic Urban Side Sling" data-price="850">
+            <div class="product-card__image">
+              <img src="images/B7_side (1).png" alt="Chic Urban Side Sling — Warm Tan">
+              <span class="product-card__badge">2 Views</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Chic Urban Side Sling</h3>
+              <p class="product-card__price">₹850</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+          <article class="product-card fade-in" data-id="B8" data-name="Blush Side Crossbody" data-price="850">
+            <div class="product-card__image">
+              <img src="images/B8_side.png" alt="Blush Side Crossbody">
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Blush Side Crossbody</h3>
+              <p class="product-card__price">₹850</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Handle Bag Collection -->
+    <section class="collection-spotlight section collection-spotlight--alt" id="handle-bags">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">Handle Bag Collection</span>
+          <h2 class="section-title">Artisan Top-Handle Bags</h2>
+          <p class="section-desc">Structured crochet carryalls with elegant top handles — refined enough for brunch, practical enough for every day.</p>
+        </div>
+        <div class="products__grid products__grid--single">
+          <article class="product-card fade-in" data-id="B9" data-name="Artisan Top-Handle Bag" data-price="650">
+            <div class="product-card__image">
+              <img src="images/B9_handle (1).png" alt="Artisan Top-Handle Bag">
+              <span class="product-card__badge">Bestseller</span>
+            </div>
+            <div class="product-card__body">
+              <h3 class="product-card__name">Artisan Top-Handle Bag</h3>
+              <p class="product-card__price">₹650</p>
+              <button class="btn btn--secondary add-to-cart">Add to Cart</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about section" id="about">
+      <div class="container about__grid">
+        <div class="about__image fade-in">
+          <img
+            src="https://images.unsplash.com/photo-1558171815-e695e51ab501?w=700&q=80"
+            alt="Artisan crafting crochet by hand"
+            loading="lazy"
+          >
+        </div>
+        <div class="about__content fade-in">
+          <span class="section-eyebrow">Our Story</span>
+          <h2 class="section-title">The Heart of Zrochet</h2>
+          <p>
+            Zrochet began with a simple belief: that everyday objects deserve the warmth of human hands.
+            What started as a quiet hobby at the kitchen table has blossomed into a boutique studio
+            dedicated to slow, intentional craftsmanship.
+          </p>
+          <p>
+            Every stitch is placed with purpose. We source soft, premium yarns in earthy tones and
+            transform them into bags, purses, and gifts that carry a piece of our story — and soon,
+            a piece of yours.
+          </p>
+          <ul class="about__features">
+            <li>100% handmade, never mass-produced</li>
+            <li>Eco-conscious yarn &amp; packaging</li>
+            <li>Custom orders welcome</li>
+          </ul>
+          <a href="#contact" class="btn btn--outline">Get in Touch</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials section">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">Kind Words</span>
+          <h2 class="section-title">What Our Customers Say</h2>
+        </div>
+        <div class="testimonials__grid">
+          <blockquote class="testimonial-card fade-in">
+            <div class="testimonial-card__stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p>"The tote bag I ordered is absolutely stunning. You can feel the love in every stitch. I've received so many compliments!"</p>
+            <footer>
+              <strong>Emily R.</strong>
+              <span>Verified Buyer</span>
+            </footer>
+          </blockquote>
+          <blockquote class="testimonial-card fade-in">
+            <div class="testimonial-card__stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p>"I bought the crochet flower bouquet as a gift and it brought tears to my mom's eyes. Truly a work of art — delicate and beautiful."</p>
+            <footer>
+              <strong>Sophia M.</strong>
+              <span>Verified Buyer</span>
+            </footer>
+          </blockquote>
+          <blockquote class="testimonial-card fade-in">
+            <div class="testimonial-card__stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p>"Quality beyond expectations. The clutch is my go-to for every occasion. Zrochet has a customer for life!"</p>
+            <footer>
+              <strong>Danielle K.</strong>
+              <span>Verified Buyer</span>
+            </footer>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- Instagram Gallery -->
+    <section class="gallery section">
+      <div class="container">
+        <div class="section-header fade-in">
+          <span class="section-eyebrow">@zrochet.studio</span>
+          <h2 class="section-title">From Our Studio</h2>
+        </div>
+        <div class="gallery__grid">
+          <a href="#" class="gallery__item fade-in" aria-label="Instagram post 1">
+            <img src="https://images.unsplash.com/photo-1591561954557-26941168b49e?w=400&q=80" alt="Crochet bag flat lay" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#" class="gallery__item fade-in" aria-label="Instagram post 2">
+            <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&q=80" alt="Crochet flowers" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#" class="gallery__item fade-in" aria-label="Instagram post 3">
+            <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80" alt="Handmade purse detail" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#" class="gallery__item fade-in" aria-label="Side sling bag">
+            <img src="images/B7_side (2).png" alt="Chic Urban Side Sling detail" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#" class="gallery__item fade-in" aria-label="Blush side crossbody">
+            <img src="images/B8_side.png" alt="Blush Side Crossbody" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+          <a href="#" class="gallery__item fade-in" aria-label="Top-handle bag">
+            <img src="images/B9_handle (2).png" alt="Artisan Top-Handle Bag" loading="lazy">
+            <span class="gallery__overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter section">
+      <div class="container">
+        <div class="newsletter__inner fade-in">
+          <span class="section-eyebrow">Stay Connected</span>
+          <h2 class="section-title">Join the Zrochet Circle</h2>
+          <p>Be the first to know about new collections, exclusive offers, and behind-the-scenes stories from our studio.</p>
+          <form class="newsletter__form" id="newsletterForm">
+            <input
+              type="email"
+              name="email"
+              placeholder="Your email address"
+              aria-label="Email address"
+              required
+            >
+            <button type="submit" class="btn btn--primary">Subscribe</button>
+          </form>
+          <p class="newsletter__note" id="newsletterMsg" hidden></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" id="contact">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a href="#" class="footer__logo">Zrochet</a>
+          <p>Handcrafted crochet creations made with love, patience, and a touch of magic.</p>
+          <div class="footer__social">
+            <a href="#" aria-label="Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Facebook">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Pinterest">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 21c.6-2.8 1.5-5.3 1.5-7.5C9.5 9 11 7 13.5 7c2.2 0 3.5 1.5 3.5 3.5 0 2.6-1.1 4.8-2.8 4.8-.9 0-1.5-.7-1.3-1.6.2-.7.7-2.9.7-4.1 0-1.9-1-3.5-2.9-3.5-2.2 0-3.9 2.2-3.9 5.1 0 1.9.7 3.2 1.7 3.2.6 0 1-.5 1-1.2 0-.4-.2-1.3-.3-1.6-.1-.4-.3-.5-.3-.8 0-.2.2-.5.5-.5 1.4 0 2.4 1.5 2.4 3.6 0 2.7-1.5 4.7-3.7 4.7-2 0-3.1-1.5-3.1-3.2 0-2.4 1.5-4.5 3.7-4.5 1.3 0 2.1.5 2.5 1 .1-.4.4-1.5.5-1.8-.5-.2-1.2-.3-1.9-.3-2.8 0-5.1 2.3-5.1 5.4 0 2 .7 3.4 1.8 4"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Email">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M22 7l-10 7L2 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer__links">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#shop">Shop</a></li>
+            <li><a href="#collections">Collections</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer__contact">
+          <h3>Contact</h3>
+          <ul>
+            <li>hello@zrochet.com</li>
+            <li>+1 (555) 123-4567</li>
+            <li>123 Artisan Lane<br>Portland, OR 97201</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p>&copy; 2026 Zrochet. All rights reserved.</p>
+        <div class="footer__legal">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
