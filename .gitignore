@@ -26,6 +26,10 @@ yarn-error.log*
 .env
 .env*.local
 
+# customer payment screenshots (local only)
+/public/uploads/payments/*
+!/public/uploads/payments/.gitkeep
+
 # typescript
 next-env.d.ts
 tsconfig.tsbuildinfo
