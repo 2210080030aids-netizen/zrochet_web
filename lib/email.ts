@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
 import { getSiteUrl } from "@/lib/env";
 import type { CartItem } from "@/lib/cart";
@@ -15,6 +16,11 @@ export interface ThankYouEmailOptions {
   receiptPdf?: Buffer;
 }
 
+export type EmailProvider = "sendgrid" | "resend" | "smtp";
+
+const RAILWAY_SMTP_BLOCKED_HINT =
+  "Railway blocks Gmail SMTP (ports 587/465). Add SENDGRID_API_KEY on Railway for production email. Gmail SMTP still works on localhost.";
+
 /** Read env vars trimmed; strip quotes Railway/dashboard sometimes adds. */
 export function readEnv(key: string): string | undefined {
   let value = process.env[key]?.trim();
@@ -26,6 +32,10 @@ export function readEnv(key: string): string | undefined {
     value = value.slice(1, -1).trim();
   }
   return value || undefined;
+}
+
+export function isRailwayRuntime(): boolean {
+  return Boolean(process.env.RAILWAY_ENVIRONMENT);
 }
 
 function formatMoney(amount: number, currency: string): string {
@@ -96,6 +106,16 @@ function getReceiptAttachment(orderId: string, receiptPdf?: Buffer) {
   };
 }
 
+function parseFromAddress(raw: string): { email: string; name?: string } {
+  const match = raw.match(/^(.+?)\s*<([^>]+)>$/);
+  if (match) return { name: match[1].trim(), email: match[2].trim() };
+  return { email: raw.trim() };
+}
+
+function isSendGridConfigured(): boolean {
+  return Boolean(readEnv("SENDGRID_API_KEY"));
+}
+
 function isResendConfigured(): boolean {
   return Boolean(readEnv("RESEND_API_KEY"));
 }
@@ -104,10 +124,11 @@ function isSmtpConfigured(): boolean {
   return Boolean(readEnv("SMTP_HOST") && readEnv("SMTP_USER") && readEnv("SMTP_PASS"));
 }
 
-function getEmailProvider(): "resend" | "smtp" | null {
-  // Prefer Gmail SMTP when configured (user's choice for this project)
-  if (isSmtpConfigured()) return "smtp";
+/** Railway blocks SMTP — use HTTP APIs (SendGrid/Resend) in production. */
+export function getEmailProvider(): EmailProvider | null {
+  if (isSendGridConfigured()) return "sendgrid";
   if (isResendConfigured()) return "resend";
+  if (isSmtpConfigured() && !isRailwayRuntime()) return "smtp";
   return null;
 }
 
@@ -122,12 +143,64 @@ function formatSmtpError(error: unknown): string {
     return "Gmail login failed. Use an App Password (not your normal password).";
   }
   if (code === "ETIMEDOUT" || code === "ECONNECTION" || /timeout|connect/i.test(message)) {
-    return "Could not connect to Gmail SMTP from the server. Try port 465 or check Railway variables and redeploy.";
+    if (isRailwayRuntime()) return RAILWAY_SMTP_BLOCKED_HINT;
+    return "Could not connect to Gmail SMTP. Check SMTP settings.";
   }
   return message;
 }
 
-async function sendViaResend(options: ThankYouEmailOptions): Promise<{ sent: boolean; error?: string }> {
+async function sendViaSendGrid(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
+  const apiKey = readEnv("SENDGRID_API_KEY")!;
+  sgMail.setApiKey(apiKey);
+
+  const fromRaw =
+    readEnv("SENDGRID_FROM") ||
+    readEnv("SMTP_FROM") ||
+    readEnv("SMTP_USER") ||
+    "hello@zrochet.com";
+  const from = parseFromAddress(fromRaw);
+  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
+
+  try {
+    await sgMail.send({
+      to: options.to,
+      from: from.name ? { email: from.email, name: from.name } : from.email,
+      subject: getEmailSubject(options.orderId),
+      html: buildThankYouHtml(options),
+      attachments: attachment
+        ? [
+            {
+              content: attachment.content.toString("base64"),
+              filename: attachment.filename,
+              type: attachment.contentType,
+              disposition: "attachment",
+            },
+          ]
+        : undefined,
+    });
+    return { sent: true };
+  } catch (error) {
+    console.error("SendGrid thank-you email failed:", error);
+    const body =
+      error && typeof error === "object" && "response" in error
+        ? (error as { response?: { body?: { errors?: { message: string }[] } } }).response?.body
+        : undefined;
+    const msg = body?.errors?.[0]?.message;
+    return {
+      sent: false,
+      error:
+        msg ||
+        (error instanceof Error ? error.message : String(error)) +
+          " — verify sender at SendGrid → Settings → Sender Authentication.",
+    };
+  }
+}
+
+async function sendViaResend(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
   const resend = new Resend(readEnv("RESEND_API_KEY"));
   const from = readEnv("RESEND_FROM") || "Zrochet <onboarding@resend.dev>";
   const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
@@ -163,7 +236,13 @@ async function sendWithTransporter(
   });
 }
 
-async function sendViaSmtp(options: ThankYouEmailOptions): Promise<{ sent: boolean; error?: string }> {
+async function sendViaSmtp(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
+  if (isRailwayRuntime()) {
+    return { sent: false, error: RAILWAY_SMTP_BLOCKED_HINT };
+  }
+
   const host = readEnv("SMTP_HOST")!;
   const user = readEnv("SMTP_USER")!;
   const pass = readEnv("SMTP_PASS")!;
@@ -216,34 +295,55 @@ async function sendViaSmtp(options: ThankYouEmailOptions): Promise<{ sent: boole
 
 export function getEmailConfigStatus(): {
   configured: boolean;
-  provider: "resend" | "smtp" | null;
+  provider: EmailProvider | null;
   hint: string;
   smtpHost?: string;
   smtpUser?: string;
   smtpPort?: string;
+  railwaySmtpBlocked?: boolean;
 } {
   const provider = getEmailProvider();
+  const onRailway = isRailwayRuntime();
+  const smtpOnlyOnRailway = onRailway && isSmtpConfigured() && !isSendGridConfigured() && !isResendConfigured();
+
+  if (provider === "sendgrid") {
+    return {
+      configured: true,
+      provider,
+      hint: "Using SendGrid API (works on Railway).",
+    };
+  }
   if (provider === "resend") {
     return {
       configured: true,
       provider,
-      hint: "Using Resend API (RESEND_API_KEY).",
+      hint: "Using Resend API (works on Railway).",
     };
   }
   if (provider === "smtp") {
     return {
       configured: true,
       provider,
-      hint: `Using SMTP (${readEnv("SMTP_HOST")}).`,
+      hint: `Using Gmail SMTP (${readEnv("SMTP_HOST")}) — localhost only.`,
       smtpHost: readEnv("SMTP_HOST"),
       smtpUser: readEnv("SMTP_USER"),
       smtpPort: readEnv("SMTP_PORT") || "587",
     };
   }
+  if (smtpOnlyOnRailway) {
+    return {
+      configured: false,
+      provider: null,
+      hint: RAILWAY_SMTP_BLOCKED_HINT,
+      railwaySmtpBlocked: true,
+      smtpHost: readEnv("SMTP_HOST"),
+      smtpUser: readEnv("SMTP_USER"),
+    };
+  }
   return {
     configured: false,
     provider: null,
-    hint: "Add SMTP_HOST + SMTP_USER + SMTP_PASS to Railway Variables, then redeploy.",
+    hint: "Add SENDGRID_API_KEY (Railway) or SMTP settings (localhost).",
   };
 }
 
@@ -260,8 +360,10 @@ export async function sendThankYouEmail(
     };
   }
 
-  const result =
-    provider === "resend" ? await sendViaResend(options) : await sendViaSmtp(options);
+  let result: { sent: boolean; error?: string };
+  if (provider === "sendgrid") result = await sendViaSendGrid(options);
+  else if (provider === "resend") result = await sendViaResend(options);
+  else result = await sendViaSmtp(options);
 
   return { ...result, provider };
 }

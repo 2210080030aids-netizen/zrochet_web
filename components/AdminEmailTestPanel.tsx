@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 
 interface EmailStatus {
   configured: boolean;
-  provider: "resend" | "smtp" | null;
+  provider: "sendgrid" | "resend" | "smtp" | null;
   hint: string;
   smtpHost?: string;
   smtpUser?: string;
   smtpPort?: string;
   runtime?: string;
+  railwaySmtpBlocked?: boolean;
 }
 
 export default function AdminEmailTestPanel() {
@@ -46,11 +47,19 @@ export default function AdminEmailTestPanel() {
 
   return (
     <div className="mt-10 max-w-2xl rounded-2xl border border-sand bg-white p-6">
-      <h2 className="font-display text-xl font-semibold text-brown-dark">Order email (SMTP)</h2>
+      <h2 className="font-display text-xl font-semibold text-brown-dark">Order email</h2>
       <p className="mt-2 text-sm text-text-muted">
-        Thank-you emails send when you approve an order. Configure SMTP in Railway Variables for
-        production.
+        Thank-you emails send when you approve an order. Gmail SMTP works on localhost only —
+        Railway requires SendGrid (free).
       </p>
+
+      {status?.railwaySmtpBlocked && (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <strong>Railway blocks Gmail SMTP.</strong> Add{" "}
+          <code className="rounded bg-white px-1">SENDGRID_API_KEY</code> in Railway Variables.
+          See steps below.
+        </div>
+      )}
 
       {status && (
         <dl className="mt-4 space-y-2 text-sm">
@@ -60,7 +69,11 @@ export default function AdminEmailTestPanel() {
           </div>
           <div className="flex gap-2">
             <dt className="text-text-muted">Status:</dt>
-            <dd className={status.configured ? "font-medium text-emerald-700" : "font-medium text-amber-800"}>
+            <dd
+              className={
+                status.configured ? "font-medium text-emerald-700" : "font-medium text-amber-800"
+              }
+            >
               {status.configured ? `Configured (${status.provider})` : "Not configured"}
             </dd>
           </div>
@@ -74,15 +87,34 @@ export default function AdminEmailTestPanel() {
                 <dt className="text-text-muted">SMTP user:</dt>
                 <dd>{status.smtpUser}</dd>
               </div>
-              <div className="flex gap-2">
-                <dt className="text-text-muted">SMTP port:</dt>
-                <dd>{status.smtpPort}</dd>
-              </div>
             </>
           )}
           {!status.configured && <dd className="text-amber-800">{status.hint}</dd>}
         </dl>
       )}
+
+      <div className="mt-6 rounded-xl bg-beige/50 px-4 py-3 text-xs leading-relaxed text-brown-dark">
+        <p className="font-semibold">SendGrid setup (Railway production):</p>
+        <ol className="mt-2 list-decimal space-y-1 pl-4">
+          <li>
+            Sign up at{" "}
+            <a href="https://sendgrid.com" className="text-brown underline" target="_blank" rel="noreferrer">
+              sendgrid.com
+            </a>{" "}
+            (free)
+          </li>
+          <li>Settings → API Keys → Create API Key</li>
+          <li>
+            Settings → Sender Authentication → Verify Single Sender →{" "}
+            <strong>2210080030aids@gmail.com</strong>
+          </li>
+          <li>
+            Railway Variables: <code>SENDGRID_API_KEY</code>,{" "}
+            <code>SENDGRID_FROM=Zrochet &lt;2210080030aids@gmail.com&gt;</code>
+          </li>
+          <li>Redeploy Railway</li>
+        </ol>
+      </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
         <label className="block flex-1 text-sm font-medium text-brown-dark">

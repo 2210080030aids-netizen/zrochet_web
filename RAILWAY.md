@@ -40,16 +40,25 @@ git push origin main
 | `NEXT_PUBLIC_UPI_ID` | Your UPI ID |
 | `NEXT_PUBLIC_UPI_PAYEE_NAME` | `Zrochet` |
 
-**Thank-you email on order approval (required for emails to send):**
+**Thank-you email on order approval:**
 
-**Option A — Resend (recommended, easiest):**
+> **Railway blocks Gmail SMTP** (ports 587/465). Use **SendGrid** on Railway. Gmail SMTP still works on **localhost**.
 
-| Variable | Example |
-|----------|---------|
-| `RESEND_API_KEY` | from [resend.com](https://resend.com) → API Keys |
-| `RESEND_FROM` | `Zrochet <hello@yourdomain.com>` (or use `onboarding@resend.dev` for testing) |
+**Railway production — SendGrid (required):**
 
-**Option B — Gmail SMTP (configured in `.env.local`):**
+1. [sendgrid.com](https://sendgrid.com) → free account
+2. **Settings → API Keys** → Create API Key
+3. **Settings → Sender Authentication → Verify Single Sender** → `2210080030aids@gmail.com`
+4. Add Railway variables:
+
+| Variable | Value |
+|----------|--------|
+| `SENDGRID_API_KEY` | your SendGrid API key |
+| `SENDGRID_FROM` | `Zrochet <2210080030aids@gmail.com>` |
+
+5. Redeploy
+
+**Local development — Gmail SMTP:**
 
 | Variable | Value |
 |----------|--------|
@@ -57,14 +66,8 @@ git push origin main
 | `SMTP_PORT` | `587` |
 | `SMTP_SECURE` | `false` |
 | `SMTP_USER` | `2210080030aids@gmail.com` |
-| `SMTP_PASS` | Gmail app password (in `.env.local` only — never commit) |
+| `SMTP_PASS` | Gmail app password (`.env.local` only) |
 | `SMTP_FROM` | `Zrochet <2210080030aids@gmail.com>` |
-
-**Sync from local to Railway (after `railway login` + `railway link`):**
-```bash
-npm run railway:sync-email
-```
-Then redeploy the web service.
 
 ### 6. Generate domain
 1. Web service → **Settings** → **Networking** → **Generate Domain**
@@ -134,7 +137,7 @@ Migrate + seed run automatically on app start — no manual `db:seed` needed.
 | Build fails (`tsconfig.tsbuildinfo`) | Clear build cache |
 | Admin empty / no products | Check deploy logs for migrate/seed; verify `DATABASE_URL` reference |
 | Admin login fails | Check `ADMIN_PASSWORD` on **web service** |
-| Email not sent on approve | Add `RESEND_API_KEY` or Gmail SMTP variables; use **Resend** button on order if approve succeeded but email failed |
+| Email not sent on Railway | Railway blocks Gmail SMTP — add `SENDGRID_API_KEY` + verify sender at SendGrid |
 
 ---
 

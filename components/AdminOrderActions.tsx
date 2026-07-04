@@ -120,9 +120,9 @@ export default function AdminOrderActions({
       </div>
       {message && <p className="text-sm text-brown-dark">{message}</p>}
       <p className="text-xs text-text-muted">
-        Approving sends a thank-you email with product details and PDF receipt. Set{" "}
-        <code className="rounded bg-cream px-1">RESEND_API_KEY</code> or Gmail SMTP in
-        environment variables.
+        Approving sends a thank-you email with product details and PDF receipt. On Railway use
+        SendGrid (<code className="rounded bg-cream px-1">SENDGRID_API_KEY</code>); Gmail SMTP
+        works on localhost only.
       </p>
     </div>
   );
