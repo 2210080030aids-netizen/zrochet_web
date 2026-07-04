@@ -92,6 +92,8 @@ Migrate + seed run automatically on app start — no manual `db:seed` needed.
 6. Store: http://localhost:3000  
    Admin: http://localhost:3000/admin/login
 
+`npm run db:migrate` and `npm run db:seed` load `.env.local` automatically — no separate `.env` file required.
+
 ---
 
 ## Build & start (automatic on Railway)

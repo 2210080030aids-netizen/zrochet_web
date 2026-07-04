@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 function isRailwayRuntime() {
   return Boolean(
     process.env.RAILWAY_ENVIRONMENT ||
@@ -6,7 +9,21 @@ function isRailwayRuntime() {
   );
 }
 
+function loadEnvFiles() {
+  const root = path.join(__dirname, "..");
+  try {
+    const dotenv = require("dotenv");
+    const envPath = path.join(root, ".env");
+    const localPath = path.join(root, ".env.local");
+    if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
+    if (fs.existsSync(localPath)) dotenv.config({ path: localPath, override: true });
+  } catch {
+    // dotenv is available via prisma; ignore if missing
+  }
+}
+
 function getDatabaseUrl() {
+  loadEnvFiles();
   const url = (process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL || "").trim();
   if (!url) return undefined;
   if (url.includes("PASSWORD@HOST") || url.includes("@HOST:")) return undefined;
@@ -32,4 +49,4 @@ if (require.main === module) {
   console.log("DATABASE_URL resolved for local development.");
 }
 
-module.exports = { getDatabaseUrl, resolveDatabaseUrl, isRailwayRuntime };
+module.exports = { getDatabaseUrl, resolveDatabaseUrl, loadEnvFiles, isRailwayRuntime };
