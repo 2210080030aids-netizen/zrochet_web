@@ -53,6 +53,9 @@ export default async function AdminOrdersPage() {
                     >
                       {formatOrderStatus(order.status)}
                     </span>
+                    {order.paymentProofUrl && (
+                      <span className="mt-1 block text-xs text-emerald-700">Proof uploaded</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

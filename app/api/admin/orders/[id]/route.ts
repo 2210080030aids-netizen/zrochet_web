@@ -10,6 +10,47 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+async function sendOrderThankYouEmail(order: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  items: unknown;
+  subtotal: number;
+  currency: string;
+  status: string;
+  paymentMethod?: string | null;
+  paidAt?: Date | null;
+  approvedAt?: Date | null;
+  createdAt: Date;
+}) {
+  const items = order.items as unknown as CartItem[];
+  const receiptPdf = generateReceiptPdf({ ...order, items });
+
+  const emailResult = await sendThankYouEmail({
+    to: order.email,
+    customerName: order.name,
+    orderId: order.id,
+    subtotal: order.subtotal,
+    currency: order.currency,
+    phone: order.phone,
+    address: order.address,
+    items,
+    receiptPdf,
+  });
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      thankYouEmailSent: emailResult.sent,
+      thankYouEmailError: emailResult.sent ? null : emailResult.error || "Unknown error",
+    },
+  });
+
+  return emailResult;
+}
+
 export async function GET(_request: Request, { params }: RouteParams) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,11 +74,27 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   const { id } = await params;
   const body = await request.json();
-  const action = body.action as "approve" | "reject";
+  const action = body.action as "approve" | "reject" | "resend_email";
 
   const order = await prisma.order.findUnique({ where: { id } });
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  if (action === "resend_email") {
+    if (order.status !== ORDER_STATUS.APPROVED) {
+      return NextResponse.json({ error: "Order must be approved first" }, { status: 400 });
+    }
+
+    const emailResult = await sendOrderThankYouEmail(order);
+    const updated = await prisma.order.findUnique({ where: { id } });
+
+    return NextResponse.json({
+      order: updated,
+      emailSent: emailResult.sent,
+      emailError: emailResult.error,
+      provider: emailResult.provider,
+    });
   }
 
   if (action === "reject") {
@@ -60,23 +117,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     },
   });
 
-  const receiptPdf = generateReceiptPdf({
-    ...updated,
-    items: updated.items as unknown as CartItem[],
-  });
-
-  const emailResult = await sendThankYouEmail({
-    to: updated.email,
-    customerName: updated.name,
-    orderId: updated.id,
-    subtotal: updated.subtotal,
-    currency: updated.currency,
-    receiptPdf,
-  });
+  const emailResult = await sendOrderThankYouEmail(updated);
+  const orderWithEmail = await prisma.order.findUnique({ where: { id } });
 
   return NextResponse.json({
-    order: updated,
+    order: orderWithEmail,
     emailSent: emailResult.sent,
     emailError: emailResult.error,
+    provider: emailResult.provider,
   });
 }

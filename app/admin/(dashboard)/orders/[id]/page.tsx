@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
@@ -89,6 +90,20 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                 <dd>{new Date(order.approvedAt).toLocaleString("en-IN")}</dd>
               </div>
             )}
+            <div>
+              <dt className="text-text-muted">Thank-you email</dt>
+              <dd>
+                {order.thankYouEmailSent ? (
+                  <span className="text-emerald-700">Sent</span>
+                ) : order.status === "approved" ? (
+                  <span className="text-amber-800">
+                    Not sent{order.thankYouEmailError ? ` — ${order.thankYouEmailError}` : ""}
+                  </span>
+                ) : (
+                  <span className="text-text-muted">Pending approval</span>
+                )}
+              </dd>
+            </div>
           </dl>
           <a
             href={`/api/orders/${order.id}/receipt`}
@@ -98,6 +113,42 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
           </a>
         </div>
       </div>
+
+      {order.paymentProofUrl && (
+        <div className="mt-6 rounded-2xl border border-sand bg-white p-6">
+          <h2 className="font-display text-lg font-semibold text-brown-dark">Payment screenshot</h2>
+          <p className="mt-1 text-sm text-text-muted">
+            Uploaded by customer — verify amount and UPI reference before approving.
+          </p>
+          <div className="relative mt-4 max-w-md overflow-hidden rounded-xl border border-sand bg-cream">
+            <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer">
+              <div className="relative aspect-[3/4] w-full">
+                <Image
+                  src={order.paymentProofUrl}
+                  alt="Customer payment proof"
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
+            </a>
+          </div>
+          <a
+            href={order.paymentProofUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-sm font-medium text-brown hover:text-brown-dark"
+          >
+            Open full size →
+          </a>
+        </div>
+      )}
+
+      {!order.paymentProofUrl && order.status === "payment_submitted" && (
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          No payment screenshot uploaded for this order.
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-sand bg-white p-6">
         <h2 className="font-display text-lg font-semibold text-brown-dark">Items</h2>
@@ -121,7 +172,12 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
       <div className="mt-6 rounded-2xl border border-sand bg-white p-6">
         <h2 className="font-display text-lg font-semibold text-brown-dark">Actions</h2>
         <div className="mt-4">
-          <AdminOrderActions orderId={order.id} status={order.status} />
+          <AdminOrderActions
+            orderId={order.id}
+            status={order.status}
+            thankYouEmailSent={order.thankYouEmailSent}
+            thankYouEmailError={order.thankYouEmailError}
+          />
         </div>
       </div>
     </div>

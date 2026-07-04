@@ -14,7 +14,9 @@
     "db:seed": "node scripts/seed-database.js",
     "db:migrate": "node scripts/run-prisma.js migrate deploy",
     "db:studio": "node scripts/run-prisma.js studio",
-    "setup:local": "node scripts/run-prisma.js generate && node scripts/run-prisma.js migrate deploy && npm run db:seed"
+    "setup:local": "node scripts/run-prisma.js generate && node scripts/run-prisma.js migrate deploy && npm run db:seed",
+    "railway:sync-email": "node scripts/sync-smtp-to-railway.js",
+    "test:smtp": "node scripts/test-smtp.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -26,6 +28,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "resend": "^6.17.1",
     "tailwindcss": "4.3.1",
     "typescript": "^5.8.3"
   },

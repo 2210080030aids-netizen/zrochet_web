@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "thankYouEmailSent" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "thankYouEmailError" TEXT;

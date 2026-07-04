@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import type { ProductMedia } from "@/lib/types";
 
 interface Collection {
   slug: string;
@@ -12,6 +14,8 @@ interface Collection {
 export default function NewProductPage() {
   const router = useRouter();
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [productId, setProductId] = useState("");
+  const [media, setMedia] = useState<ProductMedia[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,18 +30,13 @@ export default function NewProductPage() {
     setSaving(true);
     setError("");
 
-    const form = new FormData(e.currentTarget);
-    const mediaRaw = String(form.get("media") || "[]");
-
-    let media = [];
-    try {
-      media = JSON.parse(mediaRaw);
-    } catch {
-      setError("Media must be valid JSON array");
+    if (media.length === 0) {
+      setError("Add at least one product image.");
       setSaving(false);
       return;
     }
 
+    const form = new FormData(e.currentTarget);
     const body = {
       productId: String(form.get("productId")),
       categorySlug: String(form.get("categorySlug")),
@@ -75,7 +74,13 @@ export default function NewProductPage() {
       <form onSubmit={handleSubmit} className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6">
         <label className="block text-sm font-medium text-brown-dark">
           Product ID (e.g. B10)
-          <input name="productId" required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+          <input
+            name="productId"
+            required
+            value={productId}
+            onChange={(e) => setProductId(e.target.value.toUpperCase())}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          />
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Collection
@@ -97,15 +102,18 @@ export default function NewProductPage() {
           Description
           <textarea name="description" rows={4} required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
         </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Media JSON
-          <textarea
-            name="media"
-            rows={4}
-            defaultValue={'[{"type":"image","src":"/images/welcome.png","label":"Front View"}]'}
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 font-mono text-xs"
-          />
-        </label>
+
+        <div>
+          <p className="text-sm font-medium text-brown-dark">Product images</p>
+          <div className="mt-2">
+            <AdminProductMediaUpload
+              productId={productId}
+              value={media}
+              onChange={setMedia}
+            />
+          </div>
+        </div>
+
         <label className="flex items-center gap-2 text-sm font-medium text-brown-dark">
           <input type="checkbox" name="inStock" defaultChecked />
           In stock

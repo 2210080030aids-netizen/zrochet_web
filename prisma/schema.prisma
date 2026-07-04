@@ -64,7 +64,10 @@ model Order {
   currency      String    @default("INR")
   status        String    @default("pending")
   paymentMethod String?   @default("upi")
+  paymentProofUrl String?
   paidAt        DateTime?
   approvedAt    DateTime?
+  thankYouEmailSent Boolean @default(false)
+  thankYouEmailError String?
   createdAt     DateTime  @default(now())
 }

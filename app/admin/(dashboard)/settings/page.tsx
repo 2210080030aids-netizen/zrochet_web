@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AdminEmailTestPanel from "@/components/AdminEmailTestPanel";
 
 interface Settings {
   email: string;
@@ -89,6 +90,8 @@ export default function AdminSettingsPage() {
           {saving ? "Saving…" : "Save Settings"}
         </button>
       </form>
+
+      <AdminEmailTestPanel />
     </div>
   );
 }

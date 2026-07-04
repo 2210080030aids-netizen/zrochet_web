@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import type { ProductMedia } from "@/lib/types";
 
 interface ProductData {
   productId: string;
@@ -26,6 +28,7 @@ export default function EditProductPage({
   const router = useRouter();
   const [resolved, setResolved] = useState<{ category: string; id: string } | null>(null);
   const [product, setProduct] = useState<ProductData | null>(null);
+  const [media, setMedia] = useState<ProductMedia[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,7 +40,10 @@ export default function EditProductPage({
     if (!resolved) return;
     fetch(`/api/admin/products/${resolved.category}/${resolved.id}`)
       .then((r) => r.json())
-      .then((data) => setProduct(data.product));
+      .then((data) => {
+        setProduct(data.product);
+        setMedia((data.product?.media as ProductMedia[]) ?? []);
+      });
   }, [resolved]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -47,15 +53,6 @@ export default function EditProductPage({
     setError("");
 
     const form = new FormData(e.currentTarget);
-    const mediaRaw = String(form.get("media") || "[]");
-    let media = [];
-    try {
-      media = JSON.parse(mediaRaw);
-    } catch {
-      setError("Media must be valid JSON");
-      setSaving(false);
-      return;
-    }
 
     const body = {
       name: String(form.get("name")),
@@ -138,15 +135,16 @@ export default function EditProductPage({
           Dimensions
           <input name="dimensions" defaultValue={product.dimensions} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
         </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Media JSON
-          <textarea
-            name="media"
-            rows={6}
-            defaultValue={JSON.stringify(product.media, null, 2)}
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 font-mono text-xs"
-          />
-        </label>
+        <div>
+          <p className="text-sm font-medium text-brown-dark">Product images</p>
+          <div className="mt-2">
+            <AdminProductMediaUpload
+              productId={product.productId}
+              value={media}
+              onChange={setMedia}
+            />
+          </div>
+        </div>
         <label className="flex items-center gap-2 text-sm font-medium text-brown-dark">
           <input type="checkbox" name="inStock" defaultChecked={product.inStock} />
           In stock

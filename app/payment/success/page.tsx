@@ -29,8 +29,8 @@ function SuccessContent() {
         Payment done successfully
       </h1>
       <p className="mt-4 leading-relaxed text-text-muted">
-        Thank you! Your payment has been submitted. We&apos;ll verify it and confirm your order
-        shortly. A receipt will be available once your order is approved.
+        Thank you! Your payment proof has been submitted. We&apos;ll verify it and confirm your order
+        shortly. You&apos;ll receive an email with your product details once approved.
       </p>
 
       {(orderId || Number.isFinite(amount)) && (

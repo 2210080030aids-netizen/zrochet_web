@@ -3,24 +3,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { formatCartPrice } from "@/lib/cart";
 import { useCart } from "@/lib/cart-context";
 import { buildUpiPaymentUrl, UPI_ID } from "@/lib/upi";
 
+type Step = "pay" | "proof";
+
 function PaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { clearCart, isReady } = useCart();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const amountParam = searchParams.get("amount");
   const orderId = searchParams.get("orderId") ?? "";
   const method = searchParams.get("method") ?? "upi";
 
   const amount = amountParam ? parseFloat(amountParam) : NaN;
+  const [step, setStep] = useState<Step>("pay");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (method !== "upi" || !orderId || !Number.isFinite(amount) || amount <= 0) return;
@@ -34,6 +41,12 @@ function PaymentContent() {
       .then(setQrDataUrl)
       .catch(() => setError("Could not generate QR code. Please use the UPI ID below."));
   }, [amount, orderId, method]);
+
+  useEffect(() => {
+    return () => {
+      if (proofPreview) URL.revokeObjectURL(proofPreview);
+    };
+  }, [proofPreview]);
 
   if (!isReady) {
     return <p className="text-text-muted">Loading payment…</p>;
@@ -63,26 +76,125 @@ function PaymentContent() {
     );
   }
 
-  async function handlePaymentComplete() {
-    try {
-      await fetch(`/api/orders/${encodeURIComponent(orderId)}/complete`, {
-        method: "POST",
-      });
-    } catch {
-      // still redirect — admin can verify manually
+  function handleProofSelect(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setError(null);
+    setProofFile(file);
+    if (proofPreview) URL.revokeObjectURL(proofPreview);
+    setProofPreview(URL.createObjectURL(file));
+  }
+
+  async function handleSubmitProof() {
+    if (!proofFile) {
+      setError("Please choose a screenshot of your payment.");
+      return;
     }
-    clearCart();
-    router.push(
-      `/payment/success?orderId=${encodeURIComponent(orderId)}&amount=${amount.toFixed(2)}`
-    );
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const form = new FormData();
+      form.append("file", proofFile);
+
+      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/submit-payment`, {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit payment proof");
+      }
+
+      clearCart();
+      router.push(
+        `/payment/success?orderId=${encodeURIComponent(orderId)}&amount=${amount.toFixed(2)}`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setSubmitting(false);
+    }
   }
 
   const upiUrl = buildUpiPaymentUrl(amount, orderId);
 
+  if (step === "proof") {
+    return (
+      <div className="mx-auto max-w-md">
+        <div className="text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">Step 2 of 2</p>
+          <h1 className="font-display mt-2 text-3xl font-semibold text-brown-dark">
+            Upload payment proof
+          </h1>
+          <p className="mt-2 text-sm text-text-muted">
+            Upload a screenshot from GPay, PhonePe, or your UPI app so we can verify your payment.
+          </p>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-sand bg-white p-6 luxury-shadow">
+          <p className="text-sm text-text-muted">
+            Order <span className="font-medium text-brown-dark">{orderId}</span>
+          </p>
+          <p className="mt-1 font-display text-2xl font-semibold text-brown-dark">
+            {formatCartPrice(amount, "INR")}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-6 w-full rounded-full border border-sand bg-cream py-3 text-sm font-semibold uppercase tracking-wider text-brown-dark transition hover:border-gold"
+          >
+            Choose file
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => handleProofSelect(e.target.files)}
+          />
+
+          {proofPreview && (
+            <div className="relative mt-4 aspect-[3/4] w-full overflow-hidden rounded-xl border border-sand bg-cream">
+              <Image
+                src={proofPreview}
+                alt="Payment screenshot preview"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          )}
+
+          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+          <button
+            type="button"
+            disabled={submitting || !proofFile}
+            onClick={handleSubmitProof}
+            className="mt-6 w-full rounded-full bg-brown-dark py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown disabled:opacity-50"
+          >
+            {submitting ? "Submitting…" : "Submit payment proof"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStep("pay")}
+            className="mt-3 w-full text-sm font-medium text-brown transition hover:text-brown-dark"
+          >
+            ← Back to QR payment
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-md">
       <div className="text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">Pay with GPay / UPI</p>
+        <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">Step 1 of 2 · Pay with GPay / UPI</p>
         <h1 className="font-display mt-2 text-3xl font-semibold text-brown-dark">Scan to pay</h1>
         <p className="mt-2 text-sm text-text-muted">
           Order <span className="font-medium text-brown-dark">{orderId}</span>
@@ -128,13 +240,13 @@ function PaymentContent() {
       <div className="mt-6 space-y-3">
         <button
           type="button"
-          onClick={handlePaymentComplete}
+          onClick={() => setStep("proof")}
           className="w-full rounded-full bg-brown-dark py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
         >
           I&apos;ve completed payment
         </button>
         <p className="text-center text-xs text-text-muted">
-          Tap after paying in GPay, PhonePe, or any UPI app. We&apos;ll confirm shortly.
+          Next: upload your payment screenshot for verification.
         </p>
         <Link
           href="/checkout"
