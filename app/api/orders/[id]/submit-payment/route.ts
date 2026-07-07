@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
 import { ORDER_STATUS } from "@/lib/order-status";
+import { orderPaymentProofPath } from "@/lib/payment-proof";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -46,17 +47,21 @@ export async function POST(request: Request, { params }: RouteParams) {
     const ext =
       file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
     const filename = `${id}.${ext}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Keep a local copy for dev; production serves from the database
     const uploadsDir = path.join(process.cwd(), "public", "uploads", "payments");
-
     await mkdir(uploadsDir, { recursive: true });
-    await writeFile(path.join(uploadsDir, filename), Buffer.from(await file.arrayBuffer()));
+    await writeFile(path.join(uploadsDir, filename), buffer);
 
-    const paymentProofUrl = `/uploads/payments/${encodeURIComponent(filename)}`;
+    const paymentProofUrl = orderPaymentProofPath(id);
 
     const updated = await prisma.order.update({
       where: { id },
       data: {
         paymentProofUrl,
+        paymentProofMime: file.type,
+        paymentProofData: buffer,
         status: ORDER_STATUS.PAYMENT_SUBMITTED,
         paidAt: new Date(),
         paymentMethod: order.paymentMethod || "upi",

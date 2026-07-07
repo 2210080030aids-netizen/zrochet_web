@@ -6,7 +6,6 @@ import PurchasePanel from "@/components/PurchasePanel";
 import {
   getCategory,
   getProduct,
-  getRelatedProducts,
 } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -32,8 +31,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!category || !product) notFound();
 
-  const related = await getRelatedProducts(product);
-
   return (
     <div className="pt-24 pb-16 animate-fade-up">
       <div className="mx-auto max-w-[1400px] px-5">
@@ -49,7 +46,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <ProductDetailLayout
           product={product}
-          info={<ProductInfo product={product} related={related} />}
+          info={<ProductInfo product={product} />}
           purchase={<PurchasePanel product={product} />}
         />
       </div>

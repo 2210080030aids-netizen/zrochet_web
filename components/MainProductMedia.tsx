@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProductMedia } from "@/lib/types";
 
 interface MainProductMediaProps {
@@ -9,6 +9,7 @@ interface MainProductMediaProps {
   alt: string;
   index: number;
   total: number;
+  videoPlayToken?: number;
 }
 
 export default function MainProductMedia({
@@ -16,10 +17,37 @@ export default function MainProductMedia({
   alt,
   index,
   total,
+  videoPlayToken = 0,
 }: MainProductMediaProps) {
   const [zooming, setZooming] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const mainRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (item.type !== "video") return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    void video.play().catch(() => {
+      // Some browsers block autoplay until the user interacts with the video directly.
+    });
+
+    return () => {
+      video.pause();
+      video.currentTime = 0;
+    };
+  }, [item.src, item.type, index, videoPlayToken]);
+
+  function handleVideoClick() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      void video.play();
+    }
+  }
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!mainRef.current || item.type === "video") return;
@@ -34,19 +62,21 @@ export default function MainProductMedia({
     <div>
       <div
         ref={mainRef}
-        className="relative aspect-[4/5] min-h-[520px] w-full overflow-hidden rounded-2xl bg-white luxury-shadow-lg sm:min-h-[620px] lg:min-h-[740px] xl:min-h-[880px]"
+        className="relative w-full overflow-hidden rounded-2xl bg-cream luxury-shadow-lg"
         onMouseEnter={() => item.type === "image" && setZooming(true)}
         onMouseLeave={() => setZooming(false)}
         onMouseMove={handleMouseMove}
       >
         {item.type === "video" ? (
           <video
+            ref={videoRef}
             src={item.src}
             poster={item.poster}
             controls
             playsInline
-            className="h-full w-full object-cover"
+            className="h-auto w-full cursor-pointer"
             aria-label={alt}
+            onClick={handleVideoClick}
           >
             Your browser does not support video playback.
           </video>
@@ -54,10 +84,11 @@ export default function MainProductMedia({
           <Image
             src={item.src}
             alt={alt}
-            fill
+            width={900}
+            height={1200}
             priority={index === 0}
-            className={`object-cover transition-transform duration-300 ease-out ${
-              zooming ? "scale-[3]" : "scale-100"
+            className={`h-auto w-full transition-transform duration-300 ease-out ${
+              zooming ? "scale-[2]" : "scale-100"
             }`}
             style={
               zooming ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : undefined
@@ -76,7 +107,7 @@ export default function MainProductMedia({
       </div>
       <p className="mt-3 text-center text-xs text-text-muted">
         {item.type === "video"
-          ? "Watch the product video"
+          ? "Tap the video or select it from thumbnails to play"
           : "Hover to zoom for detailed viewing"}
       </p>
     </div>

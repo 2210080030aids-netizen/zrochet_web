@@ -107,13 +107,6 @@ export async function getProduct(
   );
 }
 
-export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
-  const catalog = await resolveCatalog();
-  return catalog.products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, limit);
-}
-
 export async function getSiteSettings(): Promise<SiteSettingsData> {
   if (isDatabaseConfigured()) {
     return fetchSiteSettings();
@@ -153,32 +146,4 @@ export function formatOriginalPrice(product: Product): string | null {
   return "$" + product.originalPrice.toFixed(2);
 }
 
-export const SAMPLE_REVIEWS = [
-  {
-    id: "1",
-    author: "Priya M.",
-    rating: 5,
-    date: "March 2026",
-    title: "Absolutely stunning craftsmanship",
-    body: "The quality exceeded my expectations. Every stitch is perfect and the bag gets compliments everywhere I go.",
-    verified: true,
-  },
-  {
-    id: "2",
-    author: "Ananya R.",
-    rating: 5,
-    date: "February 2026",
-    title: "Worth every rupee",
-    body: "Beautiful handmade piece. The photos don't do justice — it's even prettier in person. Fast delivery too!",
-    verified: true,
-  },
-  {
-    id: "3",
-    author: "Sarah K.",
-    rating: 4,
-    date: "January 2026",
-    title: "Lovely bag, unique design",
-    body: "Such a unique piece. Slightly smaller than I imagined but perfect for evenings out. Would buy again.",
-    verified: true,
-  },
-];
+export { getSampleReviewsForProduct, SAMPLE_REVIEWS } from "./sample-reviews";

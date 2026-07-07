@@ -1,5 +1,5 @@
 /**
- * Push SMTP_* variables from .env.local to Railway (web service).
+ * Push email variables from .env.local to Railway (web service).
  * Prerequisites: railway login && railway link (select your web service)
  * Usage: npm run railway:sync-email
  */
@@ -17,6 +17,27 @@ const SMTP_KEYS = [
   "SMTP_PASS",
   "SMTP_FROM",
 ];
+
+const SENDGRID_KEYS = ["SENDGRID_API_KEY", "SENDGRID_FROM"];
+
+function syncKeys(vars, keys, label) {
+  const missing = keys.filter((k) => !vars[k]);
+  if (missing.length) {
+    console.warn(`Skipping ${label} — missing in .env.local:`, missing.join(", "));
+    return;
+  }
+
+  console.log(`Syncing ${label} to Railway…`);
+  for (const key of keys) {
+    const value = vars[key];
+    const escaped = value.replace(/"/g, '\\"');
+    execSync(`npx @railway/cli variables set ${key}="${escaped}"`, {
+      stdio: "inherit",
+      cwd: path.join(__dirname, ".."),
+    });
+    console.log(`  ✓ ${key}`);
+  }
+}
 
 function parseEnvFile(content) {
   const vars = {};
@@ -40,27 +61,14 @@ function parseEnvFile(content) {
 
 function main() {
   if (!fs.existsSync(ENV_PATH)) {
-    console.error(".env.local not found. Add SMTP settings there first.");
+    console.error(".env.local not found. Add email settings there first.");
     process.exit(1);
   }
 
   const vars = parseEnvFile(fs.readFileSync(ENV_PATH, "utf8"));
-  const missing = SMTP_KEYS.filter((k) => !vars[k]);
-  if (missing.length) {
-    console.error("Missing in .env.local:", missing.join(", "));
-    process.exit(1);
-  }
 
-  console.log("Syncing SMTP variables to Railway…");
-  for (const key of SMTP_KEYS) {
-    const value = vars[key];
-    const escaped = value.replace(/"/g, '\\"');
-    execSync(`npx @railway/cli variables set ${key}="${escaped}"`, {
-      stdio: "inherit",
-      cwd: path.join(__dirname, ".."),
-    });
-    console.log(`  ✓ ${key}`);
-  }
+  syncKeys(vars, SENDGRID_KEYS, "SendGrid");
+  syncKeys(vars, SMTP_KEYS, "SMTP");
 
   console.log("\nDone. Redeploy the web service on Railway for changes to take effect.");
 }

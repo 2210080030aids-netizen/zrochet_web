@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
 import { formatOrderStatus, orderStatusBadgeClass } from "@/lib/order-status";
 import AdminOrderActions from "@/components/AdminOrderActions";
+import { orderPaymentProofPath } from "@/lib/payment-proof";
 import type { CartItem } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,11 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
   if (!order) notFound();
 
   const items = order.items as unknown as CartItem[];
+  const paymentProofSrc = order.paymentProofUrl
+    ? order.paymentProofUrl.startsWith("/api/")
+      ? order.paymentProofUrl
+      : orderPaymentProofPath(order.id)
+    : null;
 
   return (
     <div>
@@ -107,24 +113,24 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
           </dl>
           <a
             href={`/api/orders/${order.id}/receipt`}
-            className="mt-4 inline-block text-sm font-medium text-brown transition hover:text-brown-dark"
+            className="mt-4 inline-flex rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
           >
-            Download receipt PDF →
+            Download receipt PDF
           </a>
         </div>
       </div>
 
-      {order.paymentProofUrl && (
+      {paymentProofSrc && (
         <div className="mt-6 rounded-2xl border border-sand bg-white p-6">
           <h2 className="font-display text-lg font-semibold text-brown-dark">Payment screenshot</h2>
           <p className="mt-1 text-sm text-text-muted">
             Uploaded by customer — verify amount and UPI reference before approving.
           </p>
           <div className="relative mt-4 max-w-md overflow-hidden rounded-xl border border-sand bg-cream">
-            <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer">
+            <a href={paymentProofSrc} target="_blank" rel="noopener noreferrer">
               <div className="relative aspect-[3/4] w-full">
                 <Image
-                  src={order.paymentProofUrl}
+                  src={paymentProofSrc}
                   alt="Customer payment proof"
                   fill
                   className="object-contain"
@@ -134,7 +140,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
             </a>
           </div>
           <a
-            href={order.paymentProofUrl}
+            href={paymentProofSrc}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 inline-block text-sm font-medium text-brown hover:text-brown-dark"
@@ -144,7 +150,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {!order.paymentProofUrl && order.status === "payment_submitted" && (
+      {!paymentProofSrc && order.status === "payment_submitted" && (
         <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           No payment screenshot uploaded for this order.
         </div>

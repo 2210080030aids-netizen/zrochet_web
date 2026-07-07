@@ -8,20 +8,20 @@ import {
   getSiteSettings,
 } from "@/lib/catalog";
 
-const COLLECTION_ITEMS = [
-  { title: "Mini Bag", price: 500, slug: "mini-bags", productId: "B1" },
-  { title: "Party Bag", price: 1100, slug: "party-bags", productId: "B3" },
-  { title: "Oreo Signature Bag", price: 700, slug: "oreo-bags", productId: "B5" },
-  { title: "Handle Bag", price: 650, slug: "handle-bags", productId: "B9" },
-  { title: "Side Bag", price: 850, slug: "side-bags", productId: "B7" },
-];
-
 export default async function HomePageContent() {
   const [catalog, settings] = await Promise.all([getCatalog(), getSiteSettings()]);
   const products = catalog.products;
-  const collectionProducts = await Promise.all(
-    COLLECTION_ITEMS.map((item) => getProduct(item.slug, item.productId))
-  );
+  const collectionCards = catalog.categories.map((category) => {
+    const categoryProducts = products.filter((product) => product.category === category.slug);
+    const featured = categoryProducts[0];
+
+    return {
+      slug: category.slug,
+      title: category.name,
+      price: featured?.price ?? category.defaultPrice ?? 500,
+      image: featured ? getCoverImage(featured) : settings.heroImage,
+    };
+  });
   const heroProduct = (await getProduct("oreo-bags", "B5")) ?? products[0];
 
   return (
@@ -70,35 +70,30 @@ export default async function HomePageContent() {
             </h2>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:gap-5">
-            {COLLECTION_ITEMS.map((item, index) => {
-              const product = collectionProducts[index];
-              const image = product ? getCoverImage(product) : settings.heroImage;
-
-              return (
-                <Link
-                  key={item.title}
-                  href={`/${item.slug}`}
-                  className="group relative aspect-[3/4] overflow-hidden rounded-2xl luxury-shadow transition duration-300 hover:-translate-y-1.5 hover:luxury-shadow-lg"
-                >
-                  <Image
-                    src={image}
-                    alt={item.title}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                  />
-                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-brown-dark/70 to-transparent p-5 text-white">
-                    <h3 className="font-display text-lg font-semibold md:text-xl">{item.title}</h3>
-                    <p className="mt-1 text-sm font-medium text-gold">
-                      ₹{item.price.toLocaleString("en-IN")}
-                    </p>
-                    <span className="mt-1 text-xs opacity-0 transition group-hover:opacity-100">
-                      Shop now →
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+            {collectionCards.map((item) => (
+              <Link
+                key={item.slug}
+                href={`/${item.slug}`}
+                className="group relative aspect-[3/4] overflow-hidden rounded-2xl luxury-shadow transition duration-300 hover:-translate-y-1.5 hover:luxury-shadow-lg"
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-brown-dark/70 to-transparent p-5 text-white">
+                  <h3 className="font-display text-lg font-semibold md:text-xl">{item.title}</h3>
+                  <p className="mt-1 text-sm font-medium text-gold">
+                    ₹{item.price.toLocaleString("en-IN")}
+                  </p>
+                  <span className="mt-1 text-xs opacity-0 transition group-hover:opacity-100">
+                    Shop now →
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

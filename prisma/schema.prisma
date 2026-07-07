@@ -42,6 +42,21 @@ model Product {
   updatedAt       DateTime   @updatedAt
 
   @@id([categorySlug, productId])
+  reviews         ProductReview[]
+}
+
+model ProductReview {
+  id           String   @id @default(cuid())
+  categorySlug String
+  productId    String
+  product      Product  @relation(fields: [categorySlug, productId], references: [categorySlug, productId], onDelete: Cascade)
+  authorName   String
+  rating       Int      @default(5)
+  title        String?
+  body         String
+  createdAt    DateTime @default(now())
+
+  @@index([categorySlug, productId, createdAt])
 }
 
 model SiteSettings {
@@ -65,6 +80,8 @@ model Order {
   status        String    @default("pending")
   paymentMethod String?   @default("upi")
   paymentProofUrl String?
+  paymentProofMime String?
+  paymentProofData Bytes?
   paidAt        DateTime?
   approvedAt    DateTime?
   thankYouEmailSent Boolean @default(false)

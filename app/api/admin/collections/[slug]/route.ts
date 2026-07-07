@@ -49,21 +49,29 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteParams) {
+export async function DELETE(request: Request, { params }: RouteParams) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { slug } = await params;
+  const force = new URL(request.url).searchParams.get("force") === "true";
 
   const productCount = await prisma.product.count({ where: { categorySlug: slug } });
-  if (productCount > 0) {
+  if (productCount > 0 && !force) {
     return NextResponse.json(
-      { error: `Cannot delete — ${productCount} product(s) still in this collection` },
+      {
+        error: `Cannot delete — ${productCount} product(s) still in this collection. Remove them first, or force-delete the collection and its products.`,
+        productCount,
+      },
       { status: 400 }
     );
   }
 
-  await prisma.collection.delete({ where: { slug } });
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.collection.delete({ where: { slug } });
+    return NextResponse.json({ ok: true, deletedProducts: productCount });
+  } catch {
+    return NextResponse.json({ error: "Collection not found or could not be deleted" }, { status: 400 });
+  }
 }

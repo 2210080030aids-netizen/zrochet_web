@@ -10,6 +10,12 @@ interface ColorVariantSelectorProps {
 export default function ColorVariantSelector({ product }: ColorVariantSelectorProps) {
   if (!product.colorVariants.length) return null;
 
+  const pillClass = (isActive: boolean) =>
+    [
+      "inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-wider bg-brown-dark text-white transition",
+      isActive ? "ring-2 ring-gold ring-offset-2" : "opacity-80 hover:bg-brown hover:opacity-100",
+    ].join(" ");
+
   return (
     <div>
       <h3 className="text-sm font-semibold text-brown-dark">Color</h3>
@@ -17,48 +23,37 @@ export default function ColorVariantSelector({ product }: ColorVariantSelectorPr
         Available in {product.colorVariants.length} colour
         {product.colorVariants.length > 1 ? "s" : ""}
       </p>
-      <div className="mt-3 flex flex-wrap gap-3">
+      <div className="mt-3 flex flex-wrap gap-2">
         {product.colorVariants.map((variant) => {
           const isActive = variant.productId === product.id;
-
-          const swatch = (
-            <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                isActive
-                  ? "border-brown-dark ring-2 ring-gold/40 ring-offset-2 scale-110"
-                  : "border-sand hover:border-gold hover:scale-105"
-              }`}
-              style={{ backgroundColor: variant.swatch }}
-              title={variant.name}
-            >
-              {isActive && (
-                <svg className="h-4 w-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </span>
+          const label = (
+            <>
+              <span
+                className="h-3 w-3 shrink-0 rounded-full border border-white/60"
+                style={{ backgroundColor: variant.swatch }}
+                aria-hidden="true"
+              />
+              <span>{variant.name}</span>
+            </>
           );
 
-          return (
-            <div key={variant.productId} className="flex flex-col items-center gap-1.5">
-              {isActive ? (
-                <div aria-current="true">{swatch}</div>
-              ) : (
-                <Link
-                  href={`/${product.category}/${variant.productId}`}
-                  aria-label={"View " + variant.name + " colour"}
-                >
-                  {swatch}
-                </Link>
-              )}
-              <span
-                className={`max-w-[72px] text-center text-[10px] leading-tight ${
-                  isActive ? "font-semibold text-brown-dark" : "text-text-muted"
-                }`}
-              >
-                {variant.name}
+          if (isActive) {
+            return (
+              <span key={variant.productId} className={pillClass(true)} aria-current="true">
+                {label}
               </span>
-            </div>
+            );
+          }
+
+          return (
+            <Link
+              key={variant.productId}
+              href={`/${product.category}/${variant.productId}`}
+              className={pillClass(false)}
+              aria-label={`View ${variant.name} colour`}
+            >
+              {label}
+            </Link>
           );
         })}
       </div>

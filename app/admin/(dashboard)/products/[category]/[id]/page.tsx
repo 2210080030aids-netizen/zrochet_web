@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import { getProductColorFields } from "@/lib/color-variants";
 import type { ProductMedia } from "@/lib/types";
 
 interface ProductData {
@@ -17,8 +18,17 @@ interface ProductData {
   material: string;
   dimensions: string;
   inStock: boolean;
+  colors: unknown;
+  colorVariants: unknown;
   media: unknown;
 }
+
+interface SiblingProduct {
+  productId: string;
+  name: string;
+}
+
+const STANDALONE_VALUE = "__standalone__";
 
 export default function EditProductPage({
   params,
@@ -28,7 +38,11 @@ export default function EditProductPage({
   const router = useRouter();
   const [resolved, setResolved] = useState<{ category: string; id: string } | null>(null);
   const [product, setProduct] = useState<ProductData | null>(null);
+  const [siblingProducts, setSiblingProducts] = useState<SiblingProduct[]>([]);
   const [media, setMedia] = useState<ProductMedia[]>([]);
+  const [colorName, setColorName] = useState("");
+  const [colorSwatch, setColorSwatch] = useState("#C4A484");
+  const [linkToProductId, setLinkToProductId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,16 +55,43 @@ export default function EditProductPage({
     fetch(`/api/admin/products/${resolved.category}/${resolved.id}`)
       .then((r) => r.json())
       .then((data) => {
-        setProduct(data.product);
-        setMedia((data.product?.media as ProductMedia[]) ?? []);
+        const loaded = data.product as ProductData | undefined;
+        if (!loaded) return;
+
+        setProduct(loaded);
+        setMedia((loaded.media as ProductMedia[]) ?? []);
+
+        const colorFields = getProductColorFields(loaded);
+        setColorName(colorFields.colorName);
+        setColorSwatch(colorFields.colorSwatch);
+        setLinkToProductId(colorFields.linkToProductId || STANDALONE_VALUE);
       });
   }, [resolved]);
+
+  useEffect(() => {
+    if (!product) return;
+
+    fetch(`/api/admin/products?categorySlug=${encodeURIComponent(product.categorySlug)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const siblings = (data.products ?? []).filter(
+          (item: SiblingProduct) => item.productId !== product.productId
+        );
+        setSiblingProducts(siblings);
+      });
+  }, [product]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!resolved) return;
     setSaving(true);
     setError("");
+
+    if (!colorName.trim()) {
+      setError("Color name is required.");
+      setSaving(false);
+      return;
+    }
 
     const form = new FormData(e.currentTarget);
 
@@ -63,6 +104,11 @@ export default function EditProductPage({
       material: String(form.get("material")),
       dimensions: String(form.get("dimensions")),
       inStock: form.get("inStock") === "on",
+      colorName: colorName.trim(),
+      colorSwatch,
+      linkToProductId:
+        linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
+      standalone: linkToProductId === STANDALONE_VALUE,
       media,
     };
 
@@ -73,7 +119,8 @@ export default function EditProductPage({
     });
 
     if (!res.ok) {
-      setError("Failed to save");
+      const data = await res.json();
+      setError(data.error || "Failed to save");
       setSaving(false);
       return;
     }
@@ -108,6 +155,53 @@ export default function EditProductPage({
         <label className="block text-sm font-medium text-brown-dark">
           Name
           <input name="name" defaultValue={product.name} required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-medium text-brown-dark">
+            Color name
+            <input
+              value={colorName}
+              onChange={(e) => setColorName(e.target.value)}
+              placeholder="e.g. Blush Pink"
+              required
+              className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+            />
+          </label>
+          <label className="block text-sm font-medium text-brown-dark">
+            Color swatch
+            <div className="mt-2 flex items-center gap-3">
+              <input
+                type="color"
+                value={colorSwatch}
+                onChange={(e) => setColorSwatch(e.target.value)}
+                className="h-12 w-12 cursor-pointer rounded-lg border border-sand bg-white"
+              />
+              <input
+                value={colorSwatch}
+                onChange={(e) => setColorSwatch(e.target.value)}
+                className="w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm font-mono"
+              />
+            </div>
+          </label>
+        </div>
+        <label className="block text-sm font-medium text-brown-dark">
+          Same bag, different colour
+          <select
+            value={linkToProductId}
+            onChange={(e) => setLinkToProductId(e.target.value)}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          >
+            <option value={STANDALONE_VALUE}>Standalone colour (new bag style)</option>
+            {siblingProducts.map((sibling) => (
+              <option key={sibling.productId} value={sibling.productId}>
+                Link to {sibling.productId} — {sibling.name}
+              </option>
+            ))}
+          </select>
+          <span className="mt-2 block text-xs text-text-muted">
+            Linked bags share the same colour switcher. Updating one updates blue, pink, red on all
+            bags in the group.
+          </span>
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium text-brown-dark">

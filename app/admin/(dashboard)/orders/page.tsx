@@ -13,10 +13,22 @@ export default async function AdminOrdersPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-brown-dark">Orders & Payments</h1>
-      <p className="mt-2 text-text-muted">
-        {orders.length} orders · {awaitingApproval} awaiting approval
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-semibold text-brown-dark">Orders & Payments</h1>
+          <p className="mt-2 text-text-muted">
+            {orders.length} orders · {awaitingApproval} awaiting approval
+          </p>
+        </div>
+        {orders.length > 0 && (
+          <a
+            href="/api/admin/orders/export"
+            className="rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
+          >
+            Download CSV
+          </a>
+        )}
+      </div>
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-sand bg-white">
         {orders.length === 0 ? (
@@ -30,6 +42,7 @@ export default async function AdminOrdersPage() {
                 <th className="px-4 py-3 font-medium">Phone</th>
                 <th className="px-4 py-3 font-medium">Total</th>
                 <th className="px-4 py-3 font-medium">Payment</th>
+                <th className="px-4 py-3 font-medium">Download</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
@@ -56,6 +69,14 @@ export default async function AdminOrdersPage() {
                     {order.paymentProofUrl && (
                       <span className="mt-1 block text-xs text-emerald-700">Proof uploaded</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={`/api/orders/${order.id}/receipt`}
+                      className="inline-flex rounded-full bg-brown-dark px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
+                    >
+                      Receipt PDF
+                    </a>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

@@ -11,10 +11,23 @@ interface Collection {
   name: string;
 }
 
+interface SiblingProduct {
+  productId: string;
+  name: string;
+  colors: unknown;
+}
+
+const STANDALONE_VALUE = "__standalone__";
+
 export default function NewProductPage() {
   const router = useRouter();
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [categorySlug, setCategorySlug] = useState("");
+  const [siblingProducts, setSiblingProducts] = useState<SiblingProduct[]>([]);
   const [productId, setProductId] = useState("");
+  const [colorName, setColorName] = useState("");
+  const [colorSwatch, setColorSwatch] = useState("#C4A484");
+  const [linkToProductId, setLinkToProductId] = useState("");
   const [media, setMedia] = useState<ProductMedia[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -22,8 +35,28 @@ export default function NewProductPage() {
   useEffect(() => {
     fetch("/api/admin/collections")
       .then((r) => r.json())
-      .then((data) => setCollections(data.collections ?? []));
+      .then((data) => {
+        const items = data.collections ?? [];
+        setCollections(items);
+        if (items[0]?.slug) setCategorySlug(items[0].slug);
+      });
   }, []);
+
+  useEffect(() => {
+    if (!categorySlug) return;
+
+    fetch(`/api/admin/products?categorySlug=${encodeURIComponent(categorySlug)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const siblings = data.products ?? [];
+        setSiblingProducts(siblings);
+        if (siblings.length > 0) {
+          setLinkToProductId(siblings[0].productId);
+        } else {
+          setLinkToProductId("");
+        }
+      });
+  }, [categorySlug]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,6 +69,12 @@ export default function NewProductPage() {
       return;
     }
 
+    if (!colorName.trim()) {
+      setError("Color name is required.");
+      setSaving(false);
+      return;
+    }
+
     const form = new FormData(e.currentTarget);
     const body = {
       productId: String(form.get("productId")),
@@ -44,6 +83,10 @@ export default function NewProductPage() {
       price: Number(form.get("price")),
       description: String(form.get("description")),
       inStock: form.get("inStock") === "on",
+      colorName: colorName.trim(),
+      colorSwatch,
+      linkToProductId: linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
+      standalone: linkToProductId === STANDALONE_VALUE,
       media,
     };
 
@@ -84,15 +127,73 @@ export default function NewProductPage() {
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Collection
-          <select name="categorySlug" required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm">
+          <select
+            name="categorySlug"
+            required
+            value={categorySlug}
+            onChange={(e) => {
+              setCategorySlug(e.target.value);
+            }}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          >
             {collections.map((c) => (
-              <option key={c.slug} value={c.slug}>{c.name}</option>
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
             ))}
           </select>
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Name
           <input name="name" required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-medium text-brown-dark">
+            Color name
+            <input
+              value={colorName}
+              onChange={(e) => setColorName(e.target.value)}
+              placeholder="e.g. Blush Pink"
+              required
+              className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+            />
+          </label>
+          <label className="block text-sm font-medium text-brown-dark">
+            Color swatch
+            <div className="mt-2 flex items-center gap-3">
+              <input
+                type="color"
+                value={colorSwatch}
+                onChange={(e) => setColorSwatch(e.target.value)}
+                className="h-12 w-12 cursor-pointer rounded-lg border border-sand bg-white"
+              />
+              <input
+                value={colorSwatch}
+                onChange={(e) => setColorSwatch(e.target.value)}
+                className="w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm font-mono"
+              />
+            </div>
+          </label>
+        </div>
+        <label className="block text-sm font-medium text-brown-dark">
+          Same bag, different colour
+          <select
+            value={linkToProductId}
+            onChange={(e) => setLinkToProductId(e.target.value)}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          >
+            <option value={STANDALONE_VALUE}>Standalone colour (new bag style)</option>
+            {siblingProducts.map((product) => (
+              <option key={product.productId} value={product.productId}>
+                Link to {product.productId} — {product.name}
+              </option>
+            ))}
+          </select>
+          <span className="mt-2 block text-xs text-text-muted">
+            When this collection already has bags, new colours are added to the same colour switcher
+            on every linked bag (e.g. blue, pink → blue, pink, red). Choose standalone only for a
+            completely new bag style.
+          </span>
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Price (INR)

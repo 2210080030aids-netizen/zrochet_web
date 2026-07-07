@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import type { Product } from "@/lib/types";
-import { formatOriginalPrice, formatPrice, SAMPLE_REVIEWS } from "@/lib/catalog";
+import { formatOriginalPrice, formatPrice } from "@/lib/catalog";
 import ColorVariantSelector from "./ColorVariantSelector";
-import RelatedProducts from "./RelatedProducts";
 
 interface ProductInfoProps {
   product: Product;
-  related: Product[];
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -28,7 +26,7 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function ProductInfo({ product, related }: ProductInfoProps) {
+export default function ProductInfo({ product }: ProductInfoProps) {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
   const original = formatOriginalPrice(product);
 
@@ -111,36 +109,6 @@ export default function ProductInfo({ product, related }: ProductInfoProps) {
           </div>
         </div>
       </div>
-
-      {/* Reviews */}
-      <div>
-        <h2 className="font-display text-xl font-semibold text-brown-dark">
-          Customer Reviews
-        </h2>
-        <div className="mt-4 space-y-4">
-          {SAMPLE_REVIEWS.map((review) => (
-            <article
-              key={review.id}
-              className="rounded-xl border border-sand/60 bg-white p-5 transition hover:luxury-shadow"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <StarRating rating={review.rating} />
-                {review.verified && (
-                  <span className="text-xs font-medium text-emerald-700">Verified Purchase</span>
-                )}
-              </div>
-              <h3 className="mt-2 font-medium text-brown-dark">{review.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-text-muted">{review.body}</p>
-              <p className="mt-3 text-xs text-text-muted">
-                {review.author} · {review.date}
-              </p>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      {/* Related */}
-      {related.length > 0 && <RelatedProducts products={related} category={product.category} />}
     </div>
   );
 }

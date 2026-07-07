@@ -2,6 +2,7 @@ export interface Category {
   slug: string;
   name: string;
   label: string;
+  defaultPrice?: number;
 }
 
 export interface ProductMedia {

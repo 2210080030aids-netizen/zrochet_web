@@ -76,6 +76,7 @@ export async function fetchCatalogFromDb(): Promise<Catalog | null> {
         slug: c.slug,
         name: c.name,
         label: c.label,
+        defaultPrice: c.defaultPrice,
       })),
       products: products.map(mapProduct),
     };
@@ -88,7 +89,7 @@ export async function fetchCatalogFromDb(): Promise<Catalog | null> {
 export async function fetchCategoryFromDb(slug: string): Promise<Category | undefined> {
   const row = await prisma.collection.findUnique({ where: { slug } });
   if (!row) return undefined;
-  return { slug: row.slug, name: row.name, label: row.label };
+  return { slug: row.slug, name: row.name, label: row.label, defaultPrice: row.defaultPrice };
 }
 
 export async function fetchProductsByCategoryFromDb(categorySlug: string): Promise<Product[]> {

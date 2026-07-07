@@ -20,10 +20,11 @@ export default function EditCollectionPage() {
   const slug = String(params.slug);
   const [collection, setCollection] = useState<Collection | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`/api/admin/collections/${slug}`)
+    fetch(`/api/admin/collections/${encodeURIComponent(slug)}`)
       .then((r) => r.json())
       .then((data) => setCollection(data.collection ?? null));
   }, [slug]);
@@ -62,15 +63,36 @@ export default function EditCollectionPage() {
 
   async function handleDelete() {
     if (!collection) return;
-    if (!confirm("Delete this collection? Only works if it has no products.")) return;
 
-    const res = await fetch(`/api/admin/collections/${collection.slug}`, {
-      method: "DELETE",
-    });
+    const productCount = collection._count?.products ?? 0;
+    const confirmed = confirm(
+      productCount > 0
+        ? `Delete "${collection.name}" and all ${productCount} product(s) in it? This cannot be undone.`
+        : `Delete "${collection.name}"? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    if (productCount > 0) {
+      const forceConfirmed = confirm(
+        `Last chance: ${productCount} product(s) will be permanently removed from your store. Continue?`
+      );
+      if (!forceConfirmed) return;
+    }
+
+    setDeleting(true);
+    setError("");
+
+    const url =
+      productCount > 0
+        ? `/api/admin/collections/${encodeURIComponent(collection.slug)}?force=true`
+        : `/api/admin/collections/${encodeURIComponent(collection.slug)}`;
+
+    const res = await fetch(url, { method: "DELETE" });
+    const data = await res.json();
 
     if (!res.ok) {
-      const data = await res.json();
       setError(data.error || "Failed to delete");
+      setDeleting(false);
       return;
     }
 
@@ -89,6 +111,12 @@ export default function EditCollectionPage() {
       </Link>
       <h1 className="font-display mt-4 text-3xl font-semibold text-brown-dark">Edit Collection</h1>
       <p className="mt-2 font-mono text-sm text-text-muted">{collection.slug}</p>
+      {(collection._count?.products ?? 0) > 0 && (
+        <p className="mt-2 text-sm text-amber-800">
+          This collection has {collection._count?.products} product(s). Deleting it will remove those
+          products from your store.
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6">
         <label className="block text-sm font-medium text-brown-dark">
@@ -123,9 +151,10 @@ export default function EditCollectionPage() {
           <button
             type="button"
             onClick={handleDelete}
-            className="rounded-full border border-red-200 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-red-700 transition hover:bg-red-50"
+            disabled={deleting}
+            className="rounded-full border border-red-200 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-red-700 transition hover:bg-red-50 disabled:opacity-50"
           >
-            Delete
+            {deleting ? "Deleting…" : "Delete Collection"}
           </button>
         </div>
       </form>
