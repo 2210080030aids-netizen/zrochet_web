@@ -1,5 +1,10 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { ColorVariant } from "@/lib/types";
+
+function toJsonValue(value: unknown): Prisma.InputJsonValue {
+  return value as Prisma.InputJsonValue;
+}
 
 function parseColorVariants(value: unknown): ColorVariant[] {
   if (!Array.isArray(value)) return [];
@@ -133,8 +138,8 @@ export async function applyColorVariantGroup(
           },
         },
         data: {
-          colors: [variant.name],
-          colorVariants: group,
+          colors: toJsonValue([variant.name]),
+          colorVariants: toJsonValue(group),
         },
       })
     )
