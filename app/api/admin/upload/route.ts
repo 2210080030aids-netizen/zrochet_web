@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import {
+  buildProductUploadFilename,
+  getProductUploadsDir,
+  productMediaPublicPath,
+} from "@/lib/product-media-storage";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -48,22 +53,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "File must be under 20 MB" }, { status: 400 });
   }
 
-  const productId = String(formData.get("productId") || "product")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+  const productId = String(formData.get("productId") || "product");
   const index = Math.max(1, Number(formData.get("index") || 1));
   const label = String(formData.get("label") || `View ${index}`).trim() || `View ${index}`;
   const ext = extForMime(file.type);
-  const filename = `${productId}_upload (${index}).${ext}`;
+  const filename = buildProductUploadFilename(productId, index, ext);
 
-  const uploadsDir = path.join(process.cwd(), "public", "images");
+  const uploadsDir = getProductUploadsDir();
   await mkdir(uploadsDir, { recursive: true });
 
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(uploadsDir, filename), buffer);
 
-  const src = "/images/" + encodeURIComponent(filename);
+  const src = productMediaPublicPath(filename);
   const type = file.type.startsWith("video/") ? "video" : "image";
 
   return NextResponse.json({

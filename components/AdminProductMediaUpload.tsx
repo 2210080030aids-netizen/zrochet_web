@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProductMedia } from "@/lib/types";
+import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 
 interface AdminProductMediaUploadProps {
   productId: string;
@@ -35,6 +35,15 @@ export default function AdminProductMediaUpload({
 
     try {
       for (const file of Array.from(selected)) {
+        const previewUrl = URL.createObjectURL(file);
+        const previewItem: ProductMedia = {
+          type: file.type.startsWith("video/") ? "video" : "image",
+          src: previewUrl,
+          label: `View ${index}`,
+        };
+        next.push(previewItem);
+        onChange([...next]);
+
         const form = new FormData();
         form.append("file", file);
         form.append("productId", productId.trim());
@@ -48,11 +57,11 @@ export default function AdminProductMediaUpload({
           throw new Error(data.error || "Upload failed");
         }
 
-        next.push(data.media as ProductMedia);
+        URL.revokeObjectURL(previewUrl);
+        next[next.length - 1] = data.media as ProductMedia;
+        onChange([...next]);
         index += 1;
       }
-
-      onChange(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -61,7 +70,21 @@ export default function AdminProductMediaUpload({
     }
   }
 
+  useEffect(() => {
+    return () => {
+      for (const item of value) {
+        if (item.src.startsWith("blob:")) {
+          URL.revokeObjectURL(item.src);
+        }
+      }
+    };
+  }, [value]);
+
   function removeAt(i: number) {
+    const item = value[i];
+    if (item?.src.startsWith("blob:")) {
+      URL.revokeObjectURL(item.src);
+    }
     onChange(value.filter((_, idx) => idx !== i));
   }
 
@@ -106,14 +129,17 @@ export default function AdminProductMediaUpload({
             >
               <div className="relative aspect-square overflow-hidden rounded-lg bg-white">
                 {item.type === "video" ? (
-                  <video src={item.src} className="h-full w-full object-cover" controls muted />
+                  <video
+                    src={resolveProductMediaSrc(item.src)}
+                    className="h-full w-full object-cover"
+                    controls
+                    muted
+                  />
                 ) : (
-                  <Image
-                    src={item.src}
+                  <img
+                    src={resolveProductMediaSrc(item.src)}
                     alt={item.label}
-                    fill
-                    className="object-cover"
-                    unoptimized
+                    className="h-full w-full object-cover"
                   />
                 )}
               </div>

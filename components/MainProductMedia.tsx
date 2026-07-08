@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { ProductMedia } from "@/lib/types";
+import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 
 interface MainProductMediaProps {
   item: ProductMedia;
@@ -19,6 +20,7 @@ export default function MainProductMedia({
   total,
   videoPlayToken = 0,
 }: MainProductMediaProps) {
+  const mediaSrc = resolveProductMediaSrc(item.src);
   const [zooming, setZooming] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const mainRef = useRef<HTMLDivElement>(null);
@@ -70,7 +72,7 @@ export default function MainProductMedia({
         {item.type === "video" ? (
           <video
             ref={videoRef}
-            src={item.src}
+            src={mediaSrc}
             poster={item.poster}
             controls
             playsInline
@@ -82,7 +84,7 @@ export default function MainProductMedia({
           </video>
         ) : (
           <Image
-            src={item.src}
+            src={mediaSrc}
             alt={alt}
             width={900}
             height={1200}

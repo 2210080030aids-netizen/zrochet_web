@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import type { ProductMedia } from "@/lib/types";
+import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 
 interface ThumbnailRailProps {
   media: ProductMedia[];
@@ -44,7 +45,14 @@ export default function ThumbnailRail({
               </div>
             </>
           ) : (
-            <Image src={item.src} alt="" fill className="object-cover" sizes="76px" />
+            <Image
+              src={resolveProductMediaSrc(item.src)}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="76px"
+              unoptimized
+            />
           )}
         </button>
       ))}

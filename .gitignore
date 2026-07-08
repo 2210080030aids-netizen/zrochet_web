@@ -34,6 +34,10 @@ yarn-error.log*
 /public/uploads/hero/*
 !/public/uploads/hero/.gitkeep
 
+# admin product uploads (served via /api/media/products)
+/public/uploads/products/*
+!/public/uploads/products/.gitkeep
+
 # typescript
 next-env.d.ts
 tsconfig.tsbuildinfo

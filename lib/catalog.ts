@@ -8,6 +8,7 @@ import {
   fetchSiteSettings,
   type SiteSettingsData,
 } from "./catalog-db";
+import { resolveProductMediaSrc } from "./product-media-storage";
 import { isDatabaseConfigured } from "./prisma";
 import { normalizeProductId } from "./product-id";
 import type { Catalog, Product, Category, ProductMedia } from "./types";
@@ -29,7 +30,11 @@ function normalizeProduct(raw: RawProduct): Product {
 
   return {
     ...raw,
-    media,
+    media: media.map((item) => ({
+      ...item,
+      src: resolveProductMediaSrc(item.src),
+      poster: item.poster ? resolveProductMediaSrc(item.poster) : undefined,
+    })),
     colorVariants: raw.colorVariants ?? [],
     colors: raw.colors ?? [],
     sizes: raw.sizes ?? ["One Size"],
@@ -159,7 +164,8 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
 export function getCoverImage(product: Product): string {
   const media = product.media ?? [];
   const image = media.find((m) => m.type === "image");
-  return image?.src || media[0]?.poster || media[0]?.src || "/images/placeholder.png";
+  const src = image?.src || media[0]?.poster || media[0]?.src || "/images/placeholder.png";
+  return resolveProductMediaSrc(src);
 }
 
 export function getMediaCount(product: Product): number {

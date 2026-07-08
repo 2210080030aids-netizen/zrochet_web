@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { normalizeProductId, resolveStoredProductId } from "@/lib/product-id";
+import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 import type {
   Catalog,
   Category,
@@ -55,7 +56,11 @@ function mapProduct(row: {
     reviewCount: row.reviewCount,
     inStock: row.inStock,
     deliveryDays: row.deliveryDays,
-    media: parseJsonArray<ProductMedia>(row.media, []),
+    media: parseJsonArray<ProductMedia>(row.media, []).map((item) => ({
+      ...item,
+      src: resolveProductMediaSrc(item.src),
+      poster: item.poster ? resolveProductMediaSrc(item.poster) : undefined,
+    })),
   };
 }
 
