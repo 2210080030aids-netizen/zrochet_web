@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
 import { getProductColorFields } from "@/lib/color-variants";
+import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
 import type { ProductMedia } from "@/lib/types";
 
 interface ProductData {
@@ -60,7 +61,14 @@ export default function EditProductPage({
         if (!loaded) return;
 
         setProduct(loaded);
-        setMedia((loaded.media as ProductMedia[]) ?? []);
+        const loadedMedia = (loaded.media as ProductMedia[]) ?? [];
+        const persistableMedia = loadedMedia.filter((item) => !isEphemeralMediaSrc(item.src));
+        setMedia(persistableMedia);
+        if (persistableMedia.length !== loadedMedia.length) {
+          setError(
+            "Some images were temporary browser previews and were removed. Re-upload images and save again."
+          );
+        }
 
         const colorFields = getProductColorFields(loaded);
         setColorName(colorFields.colorName);
@@ -90,6 +98,12 @@ export default function EditProductPage({
 
     if (!colorName.trim()) {
       setError("Color name is required.");
+      setSaving(false);
+      return;
+    }
+
+    if (!media.length || media.some((item) => isEphemeralMediaSrc(item.src))) {
+      setError("Wait for all image uploads to finish before saving.");
       setSaving(false);
       return;
     }

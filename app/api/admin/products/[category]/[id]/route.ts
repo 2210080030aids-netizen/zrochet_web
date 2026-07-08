@@ -5,6 +5,7 @@ import {
   syncProductColorVariants,
 } from "@/lib/color-variants";
 import { renumberProductsAfterDelete, resolveStoredProductId } from "@/lib/product-id";
+import { validatePersistableMedia } from "@/lib/product-media-storage";
 import { productStockFields } from "@/lib/product-stock";
 import { prisma } from "@/lib/prisma";
 
@@ -51,6 +52,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Color name is required" }, { status: 400 });
   }
 
+  const mediaCheck = validatePersistableMedia(body.media);
+  if (!mediaCheck.ok) {
+    return NextResponse.json({ error: mediaCheck.message }, { status: 400 });
+  }
+
   const product = await prisma.product.update({
     where: {
       categorySlug_productId: { categorySlug: category, productId },
@@ -64,7 +70,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       material: body.material,
       dimensions: body.dimensions,
       ...productStockFields(body.quantity),
-      media: body.media ?? [],
+      media: mediaCheck.media as unknown as import("@prisma/client").Prisma.InputJsonValue,
       colors: [body.colorName.trim()],
     },
   });

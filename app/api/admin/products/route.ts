@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { syncProductColorVariants } from "@/lib/color-variants";
 import { allocateNextProductId } from "@/lib/product-id";
+import { validatePersistableMedia } from "@/lib/product-media-storage";
 import { productStockFields } from "@/lib/product-stock";
 import { prisma } from "@/lib/prisma";
 
@@ -48,16 +49,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Color name is required" }, { status: 400 });
   }
 
-  const media = Array.isArray(body.media) ? body.media : [];
-  if (!media.length) {
-    return NextResponse.json({ error: "Add at least one product image" }, { status: 400 });
+  const mediaCheck = validatePersistableMedia(body.media);
+  if (!mediaCheck.ok) {
+    return NextResponse.json({ error: mediaCheck.message }, { status: 400 });
   }
-  if (media.some((item: { src?: string }) => !item?.src || item.src.startsWith("blob:"))) {
-    return NextResponse.json(
-      { error: "Wait for image uploads to finish before saving the product" },
-      { status: 400 }
-    );
-  }
+  const media = mediaCheck.media;
 
   try {
     const created = await prisma.$transaction(async (tx) => {

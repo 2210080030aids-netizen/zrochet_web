@@ -8,7 +8,7 @@ import {
   fetchSiteSettings,
   type SiteSettingsData,
 } from "./catalog-db";
-import { resolveProductMediaSrc } from "./product-media-storage";
+import { resolveProductMediaSrc, sanitizeProductMedia } from "./product-media-storage";
 import { inStockFromQuantity, normalizeQuantity } from "./product-stock";
 import { isDatabaseConfigured } from "./prisma";
 import { normalizeProductId } from "./product-id";
@@ -35,11 +35,7 @@ function normalizeProduct(raw: RawProduct): Product {
 
   return {
     ...raw,
-    media: media.map((item) => ({
-      ...item,
-      src: resolveProductMediaSrc(item.src),
-      poster: item.poster ? resolveProductMediaSrc(item.poster) : undefined,
-    })),
+    media: sanitizeProductMedia(media),
     colorVariants: raw.colorVariants ?? [],
     colors: raw.colors ?? [],
     sizes: raw.sizes ?? ["One Size"],

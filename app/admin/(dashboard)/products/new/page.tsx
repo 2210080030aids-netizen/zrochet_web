@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
 import type { ProductMedia } from "@/lib/types";
 
 interface Collection {
@@ -66,6 +67,12 @@ export default function NewProductPage() {
 
     if (media.length === 0) {
       setError("Add at least one product image.");
+      setSaving(false);
+      return;
+    }
+
+    if (media.some((item) => isEphemeralMediaSrc(item.src))) {
+      setError("Wait for all image uploads to finish before saving.");
       setSaving(false);
       return;
     }

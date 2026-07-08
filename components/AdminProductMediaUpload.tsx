@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ProductMedia } from "@/lib/types";
-import { resolveProductMediaSrc } from "@/lib/product-media-storage";
+import { isEphemeralMediaSrc, resolveProductMediaSrc } from "@/lib/product-media-storage";
 
 interface AdminProductMediaUploadProps {
   productId: string;
@@ -137,7 +137,11 @@ export default function AdminProductMediaUpload({
                   />
                 ) : (
                   <img
-                    src={resolveProductMediaSrc(item.src)}
+                    src={
+                      isEphemeralMediaSrc(item.src)
+                        ? item.src
+                        : resolveProductMediaSrc(item.src)
+                    }
                     alt={item.label}
                     className="h-full w-full object-cover"
                   />

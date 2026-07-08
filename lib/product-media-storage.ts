@@ -1,6 +1,16 @@
 import path from "path";
+import type { ProductMedia } from "@/lib/types";
 
 const PRODUCT_UPLOADS_DIR = path.join(process.cwd(), "public", "uploads", "products");
+
+export function isEphemeralMediaSrc(src: string): boolean {
+  const value = src.trim().toLowerCase();
+  return value.startsWith("blob:") || value.startsWith("data:");
+}
+
+export function isPersistableMediaSrc(src: string): boolean {
+  return Boolean(src?.trim()) && !isEphemeralMediaSrc(src);
+}
 
 export function getProductUploadsDir(): string {
   return PRODUCT_UPLOADS_DIR;
@@ -61,4 +71,36 @@ export function resolveProductMediaSrc(src: string): string {
     return src;
   }
   return src;
+}
+
+export function sanitizeProductMedia(media: ProductMedia[]): ProductMedia[] {
+  return media
+    .filter((item) => isPersistableMediaSrc(item.src))
+    .map((item) => ({
+      ...item,
+      src: resolveProductMediaSrc(item.src),
+      poster:
+        item.poster && isPersistableMediaSrc(item.poster)
+          ? resolveProductMediaSrc(item.poster)
+          : undefined,
+    }));
+}
+
+export function validatePersistableMedia(
+  media: unknown
+): { ok: true; media: ProductMedia[] } | { ok: false; message: string } {
+  if (!Array.isArray(media) || !media.length) {
+    return { ok: false, message: "Add at least one product image" };
+  }
+
+  for (const item of media) {
+    if (!item?.src || isEphemeralMediaSrc(String(item.src))) {
+      return {
+        ok: false,
+        message: "Wait for image uploads to finish before saving the product",
+      };
+    }
+  }
+
+  return { ok: true, media: media as ProductMedia[] };
 }
