@@ -1,15 +1,33 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
 import { formatOrderStatus, orderStatusBadgeClass, ORDER_STATUS } from "@/lib/order-status";
+import {
+  buildOrderFilterQuery,
+  buildOrderWhereClause,
+  hasActiveOrderFilters,
+  parseOrderFilters,
+} from "@/lib/order-filters";
+import AdminOrdersFilters from "@/components/AdminOrdersFilters";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
-  const awaitingApproval = orders.filter(
-    (o) => o.status === ORDER_STATUS.PAYMENT_SUBMITTED
-  ).length;
+interface PageProps {
+  searchParams: Promise<{ status?: string; q?: string }>;
+}
+
+export default async function AdminOrdersPage({ searchParams }: PageProps) {
+  const filters = parseOrderFilters(await searchParams);
+  const where = buildOrderWhereClause(filters);
+  const filterQuery = buildOrderFilterQuery(filters);
+  const isFiltered = hasActiveOrderFilters(filters);
+
+  const [orders, totalCount, awaitingApproval] = await Promise.all([
+    prisma.order.findMany({ where, orderBy: { createdAt: "desc" } }),
+    prisma.order.count(),
+    prisma.order.count({ where: { status: ORDER_STATUS.PAYMENT_SUBMITTED } }),
+  ]);
 
   return (
     <div>
@@ -17,12 +35,16 @@ export default async function AdminOrdersPage() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-brown-dark">Orders & Payments</h1>
           <p className="mt-2 text-text-muted">
-            {orders.length} orders · {awaitingApproval} awaiting approval
+            {isFiltered
+              ? `Showing ${orders.length} of ${totalCount} orders`
+              : `${totalCount} orders`}
+            {" · "}
+            {awaitingApproval} awaiting approval
           </p>
         </div>
         {orders.length > 0 && (
           <a
-            href="/api/admin/orders/export"
+            href={`/api/admin/orders/export${filterQuery}`}
             className="rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
           >
             Download CSV
@@ -30,9 +52,15 @@ export default async function AdminOrdersPage() {
         )}
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-sand bg-white">
+      <Suspense fallback={<div className="mt-6 h-[74px] rounded-2xl border border-sand bg-white" />}>
+        <AdminOrdersFilters />
+      </Suspense>
+
+      <div className="mt-6 overflow-hidden rounded-2xl border border-sand bg-white">
         {orders.length === 0 ? (
-          <p className="p-8 text-sm text-text-muted">No orders yet.</p>
+          <p className="p-8 text-sm text-text-muted">
+            {isFiltered ? "No orders match your filters." : "No orders yet."}
+          </p>
         ) : (
           <table className="w-full text-left text-sm">
             <thead className="border-b border-sand bg-beige/50 text-text-muted">

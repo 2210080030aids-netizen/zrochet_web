@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/lib/cart-context";
 import type { SiteSettingsData } from "@/lib/catalog";
 
 export default function LayoutShell({
@@ -20,10 +21,10 @@ export default function LayoutShell({
   }
 
   return (
-    <>
+    <CartProvider>
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer settings={footerSettings} />
-    </>
+    </CartProvider>
   );
 }

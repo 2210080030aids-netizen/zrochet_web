@@ -16,6 +16,22 @@ export interface ThankYouEmailOptions {
   receiptPdf?: Buffer;
 }
 
+export interface RejectionEmailOptions {
+  to: string;
+  customerName: string;
+  orderId: string;
+  subtotal: number;
+  currency: string;
+  reason: string;
+}
+
+interface DispatchEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: { filename: string; content: Buffer; contentType: string }[];
+}
+
 export type EmailProvider = "sendgrid" | "resend" | "smtp";
 
 const RAILWAY_SMTP_BLOCKED_HINT =
@@ -93,8 +109,136 @@ function buildThankYouHtml(options: ThankYouEmailOptions): string {
   `;
 }
 
-function getEmailSubject(orderId: string): string {
+function getSupportEmail(): string {
+  return readEnv("SUPPORT_EMAIL") || readEnv("SMTP_FROM") || readEnv("SMTP_USER") || "hello@zrochet.com";
+}
+
+function buildRejectionHtml(options: RejectionEmailOptions): string {
+  const siteUrl = getSiteUrl();
+  const supportEmail = getSupportEmail();
+  const total = formatMoney(options.subtotal, options.currency);
+
+  return `
+    <div style="font-family: Georgia, serif; color: #3D2B1F; max-width: 560px; line-height: 1.6;">
+      <h1 style="font-size: 24px; margin-bottom: 8px;">Payment verification update</h1>
+      <p>Dear ${options.customerName},</p>
+      <p>Thank you for your order with Zrochet. We reviewed the payment proof you submitted, but we were unable to verify your payment at this time.</p>
+
+      <p style="margin-top: 20px;"><strong>Order ID:</strong> ${options.orderId}</p>
+      <p><strong>Order total:</strong> ${total}</p>
+
+      <p style="margin-top: 20px; padding: 16px; background: #FBF7F2; border-left: 3px solid #8B7355; border-radius: 4px;">
+        <strong>Reason:</strong> ${options.reason}
+      </p>
+
+      <p style="margin-top: 20px;">To proceed with your order, please resubmit a clear payment proof that shows the transaction details, amount, and reference ID.</p>
+      <p>You can <strong>reply directly to this email</strong> with an updated screenshot, or send it to our support team at <a href="mailto:${supportEmail}" style="color: #3D2B1F;">${supportEmail}</a>. Once we can verify your payment, we will confirm your order and begin processing it.</p>
+
+      <p>If you have any questions, we are happy to help.</p>
+      <p>With warmth,<br/>The Zrochet Team</p>
+      <p style="font-size: 12px; color: #8B7355;"><a href="${siteUrl}">${siteUrl}</a></p>
+    </div>
+  `;
+}
+
+function getThankYouSubject(orderId: string): string {
   return `Thank you for shopping — Zrochet order ${orderId.slice(0, 8)}`;
+}
+
+function getRejectionSubject(orderId: string): string {
+  return `Action needed — payment verification for Zrochet order ${orderId.slice(0, 8)}`;
+}
+
+interface OrderUpdateEmailOptions {
+  to: string;
+  customerName: string;
+  orderId: string;
+  subject: string;
+  headline: string;
+  paragraphs: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  details?: { label: string; value: string }[];
+}
+
+function buildOrderUpdateHtml(options: OrderUpdateEmailOptions): string {
+  const siteUrl = getSiteUrl();
+  const paragraphHtml = options.paragraphs.map((p) => `<p>${p}</p>`).join("");
+  const detailsHtml = options.details?.length
+    ? `<div style="margin-top: 20px; padding: 16px; background: #FBF7F2; border-left: 3px solid #8B7355; border-radius: 4px;">
+        ${options.details
+          .map(
+            (detail) =>
+              `<p style="margin: 0 0 8px;"><strong>${detail.label}:</strong> ${detail.value}</p>`
+          )
+          .join("")}
+      </div>`
+    : "";
+  const ctaHtml =
+    options.ctaLabel && options.ctaHref
+      ? `<p style="margin-top: 24px;">
+          <a href="${options.ctaHref}" style="display: inline-block; background: #3D2B1F; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 999px; font-size: 14px;">
+            ${options.ctaLabel}
+          </a>
+        </p>`
+      : "";
+
+  return `
+    <div style="font-family: Georgia, serif; color: #3D2B1F; max-width: 560px; line-height: 1.6;">
+      <h1 style="font-size: 24px; margin-bottom: 8px;">${options.headline}</h1>
+      <p>Dear ${options.customerName},</p>
+      ${paragraphHtml}
+      <p style="margin-top: 20px;"><strong>Order ID:</strong> ${options.orderId}</p>
+      ${detailsHtml}
+      ${ctaHtml}
+      <p style="margin-top: 24px;">With warmth,<br/>The Zrochet Team</p>
+      <p style="font-size: 12px; color: #8B7355;"><a href="${siteUrl}">${siteUrl}</a></p>
+    </div>
+  `;
+}
+
+async function sendOrderUpdateEmail(
+  options: OrderUpdateEmailOptions
+): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  const provider = getEmailProvider();
+  if (!provider) {
+    return {
+      sent: false,
+      error: getEmailConfigStatus().hint,
+      provider: "none",
+    };
+  }
+
+  const result = await dispatchEmail({
+    to: options.to,
+    subject: options.subject,
+    html: buildOrderUpdateHtml(options),
+    replyTo: getSupportEmail(),
+  });
+
+  return { ...result, provider };
+}
+
+function getPaymentReceivedSubject(orderId: string): string {
+  return `Payment received — Zrochet order ${orderId.slice(0, 8)}`;
+}
+
+function getShippedSubject(orderId: string): string {
+  return `Your order has shipped — Zrochet order ${orderId.slice(0, 8)}`;
+}
+
+function getDeliveredSubject(orderId: string): string {
+  return `Your order has been delivered — Zrochet order ${orderId.slice(0, 8)}`;
+}
+
+function getFromRaw(): string {
+  return (
+    readEnv("SENDGRID_FROM") ||
+    readEnv("RESEND_FROM") ||
+    readEnv("SMTP_FROM") ||
+    readEnv("SMTP_USER") ||
+    "hello@zrochet.com"
+  );
 }
 
 function getReceiptAttachment(orderId: string, receiptPdf?: Buffer) {
@@ -149,96 +293,76 @@ function formatSmtpError(error: unknown): string {
   return message;
 }
 
-async function sendViaSendGrid(
-  options: ThankYouEmailOptions
+async function dispatchEmail(
+  options: DispatchEmailOptions & { replyTo?: string }
 ): Promise<{ sent: boolean; error?: string }> {
-  const apiKey = readEnv("SENDGRID_API_KEY")!;
-  sgMail.setApiKey(apiKey);
+  const provider = getEmailProvider();
+  if (!provider) {
+    return { sent: false, error: getEmailConfigStatus().hint };
+  }
 
-  const fromRaw =
-    readEnv("SENDGRID_FROM") ||
-    readEnv("SMTP_FROM") ||
-    readEnv("SMTP_USER") ||
-    "hello@zrochet.com";
-  const from = parseFromAddress(fromRaw);
-  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
+  if (provider === "sendgrid") {
+    const apiKey = readEnv("SENDGRID_API_KEY")!;
+    sgMail.setApiKey(apiKey);
+    const from = parseFromAddress(getFromRaw());
+    const attachment = options.attachments?.[0];
 
-  try {
-    await sgMail.send({
-      to: options.to,
-      from: from.name ? { email: from.email, name: from.name } : from.email,
-      subject: getEmailSubject(options.orderId),
-      html: buildThankYouHtml(options),
+    try {
+      await sgMail.send({
+        to: options.to,
+        from: from.name ? { email: from.email, name: from.name } : from.email,
+        replyTo: options.replyTo,
+        subject: options.subject,
+        html: options.html,
+        attachments: attachment
+          ? [
+              {
+                content: attachment.content.toString("base64"),
+                filename: attachment.filename,
+                type: attachment.contentType,
+                disposition: "attachment",
+              },
+            ]
+          : undefined,
+      });
+      return { sent: true };
+    } catch (error) {
+      console.error("SendGrid email failed:", error);
+      const body =
+        error && typeof error === "object" && "response" in error
+          ? (error as { response?: { body?: { errors?: { message: string }[] } } }).response?.body
+          : undefined;
+      const msg = body?.errors?.[0]?.message;
+      return {
+        sent: false,
+        error:
+          msg ||
+          (error instanceof Error ? error.message : String(error)) +
+            " — verify sender at SendGrid → Settings → Sender Authentication.",
+      };
+    }
+  }
+
+  if (provider === "resend") {
+    const resend = new Resend(readEnv("RESEND_API_KEY"));
+    const from = readEnv("RESEND_FROM") || "Zrochet <onboarding@resend.dev>";
+    const attachment = options.attachments?.[0];
+
+    const { error } = await resend.emails.send({
+      from,
+      to: [options.to],
+      replyTo: options.replyTo,
+      subject: options.subject,
+      html: options.html,
       attachments: attachment
-        ? [
-            {
-              content: attachment.content.toString("base64"),
-              filename: attachment.filename,
-              type: attachment.contentType,
-              disposition: "attachment",
-            },
-          ]
+        ? [{ filename: attachment.filename, content: attachment.content }]
         : undefined,
     });
+
+    if (error) return { sent: false, error: error.message };
     return { sent: true };
-  } catch (error) {
-    console.error("SendGrid thank-you email failed:", error);
-    const body =
-      error && typeof error === "object" && "response" in error
-        ? (error as { response?: { body?: { errors?: { message: string }[] } } }).response?.body
-        : undefined;
-    const msg = body?.errors?.[0]?.message;
-    return {
-      sent: false,
-      error:
-        msg ||
-        (error instanceof Error ? error.message : String(error)) +
-          " — verify sender at SendGrid → Settings → Sender Authentication.",
-    };
   }
-}
 
-async function sendViaResend(
-  options: ThankYouEmailOptions
-): Promise<{ sent: boolean; error?: string }> {
-  const resend = new Resend(readEnv("RESEND_API_KEY"));
-  const from = readEnv("RESEND_FROM") || "Zrochet <onboarding@resend.dev>";
-  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
-
-  const { error } = await resend.emails.send({
-    from,
-    to: [options.to],
-    subject: getEmailSubject(options.orderId),
-    html: buildThankYouHtml(options),
-    attachments: attachment
-      ? [{ filename: attachment.filename, content: attachment.content }]
-      : undefined,
-  });
-
-  if (error) return { sent: false, error: error.message };
-  return { sent: true };
-}
-
-async function sendWithTransporter(
-  transporter: nodemailer.Transporter,
-  options: ThankYouEmailOptions
-): Promise<void> {
-  const from = readEnv("SMTP_FROM") || readEnv("SMTP_USER") || "hello@zrochet.com";
-  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
-
-  await transporter.verify();
-  await transporter.sendMail({
-    from,
-    to: options.to,
-    subject: getEmailSubject(options.orderId),
-    html: buildThankYouHtml(options),
-    attachments: attachment ? [attachment] : [],
-  });
-}
-
-async function sendViaSmtp(
-  options: ThankYouEmailOptions
-): Promise<{ sent: boolean; error?: string }> {
   if (isRailwayRuntime()) {
     return { sent: false, error: RAILWAY_SMTP_BLOCKED_HINT };
   }
@@ -260,6 +384,8 @@ async function sendViaSmtp(
   }
 
   const errors: string[] = [];
+  const from = readEnv("SMTP_FROM") || readEnv("SMTP_USER") || "hello@zrochet.com";
+  const attachment = options.attachments?.[0];
 
   for (const attempt of attempts) {
     const transporter = nodemailer.createTransport({
@@ -279,7 +405,15 @@ async function sendViaSmtp(
     });
 
     try {
-      await sendWithTransporter(transporter, options);
+      await transporter.verify();
+      await transporter.sendMail({
+        from,
+        to: options.to,
+        replyTo: options.replyTo,
+        subject: options.subject,
+        html: options.html,
+        attachments: attachment ? [attachment] : [],
+      });
       return { sent: true };
     } catch (error) {
       const msg = formatSmtpError(error);
@@ -291,6 +425,42 @@ async function sendViaSmtp(
   }
 
   return { sent: false, error: errors.join(" | ") };
+}
+
+async function sendViaSendGrid(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
+  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
+  return dispatchEmail({
+    to: options.to,
+    subject: getThankYouSubject(options.orderId),
+    html: buildThankYouHtml(options),
+    attachments: attachment ? [attachment] : undefined,
+  });
+}
+
+async function sendViaResend(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
+  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
+  return dispatchEmail({
+    to: options.to,
+    subject: getThankYouSubject(options.orderId),
+    html: buildThankYouHtml(options),
+    attachments: attachment ? [attachment] : undefined,
+  });
+}
+
+async function sendViaSmtp(
+  options: ThankYouEmailOptions
+): Promise<{ sent: boolean; error?: string }> {
+  const attachment = getReceiptAttachment(options.orderId, options.receiptPdf);
+  return dispatchEmail({
+    to: options.to,
+    subject: getThankYouSubject(options.orderId),
+    html: buildThankYouHtml(options),
+    attachments: attachment ? [attachment] : undefined,
+  });
 }
 
 export function getEmailConfigStatus(): {
@@ -366,6 +536,102 @@ export async function sendThankYouEmail(
   else result = await sendViaSmtp(options);
 
   return { ...result, provider };
+}
+
+export async function sendRejectionEmail(
+  options: RejectionEmailOptions
+): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  const provider = getEmailProvider();
+  if (!provider) {
+    console.warn("Email not configured — skipping rejection email.");
+    return {
+      sent: false,
+      error: getEmailConfigStatus().hint,
+      provider: "none",
+    };
+  }
+
+  const supportEmail = getSupportEmail();
+  const result = await dispatchEmail({
+    to: options.to,
+    subject: getRejectionSubject(options.orderId),
+    html: buildRejectionHtml(options),
+    replyTo: supportEmail,
+  });
+
+  return { ...result, provider };
+}
+
+export async function sendPaymentReceivedEmail(options: {
+  to: string;
+  customerName: string;
+  orderId: string;
+}): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  return sendOrderUpdateEmail({
+    to: options.to,
+    customerName: options.customerName,
+    orderId: options.orderId,
+    subject: getPaymentReceivedSubject(options.orderId),
+    headline: "Thank you for your payment",
+    paragraphs: [
+      "Thank you for your payment. We have received your payment screenshot, and your order is now under review.",
+      "Our team will verify your payment shortly and update you on the next stage of your order.",
+      "Thank you for choosing Zrochet.",
+    ],
+    ctaLabel: "Track My Order",
+    ctaHref: `${getSiteUrl()}/track?orderId=${encodeURIComponent(options.orderId)}`,
+  });
+}
+
+export async function sendShippedEmail(options: {
+  to: string;
+  customerName: string;
+  orderId: string;
+  deliveryPartner?: string | null;
+  trackingId?: string | null;
+}): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  const details: { label: string; value: string }[] = [];
+  if (options.deliveryPartner) {
+    details.push({ label: "Delivery partner", value: options.deliveryPartner });
+  }
+  if (options.trackingId) {
+    details.push({ label: "Tracking ID / AWB", value: options.trackingId });
+  }
+
+  return sendOrderUpdateEmail({
+    to: options.to,
+    customerName: options.customerName,
+    orderId: options.orderId,
+    subject: getShippedSubject(options.orderId),
+    headline: "Your order has been shipped",
+    paragraphs: [
+      "Your order has been shipped. Your tracking details are now available.",
+      "You can track your order from your Zrochet account.",
+    ],
+    details: details.length > 0 ? details : undefined,
+    ctaLabel: "Track My Order",
+    ctaHref: `${getSiteUrl()}/track?orderId=${encodeURIComponent(options.orderId)}`,
+  });
+}
+
+export async function sendDeliveredEmail(options: {
+  to: string;
+  customerName: string;
+  orderId: string;
+}): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  return sendOrderUpdateEmail({
+    to: options.to,
+    customerName: options.customerName,
+    orderId: options.orderId,
+    subject: getDeliveredSubject(options.orderId),
+    headline: "Your order has been delivered",
+    paragraphs: [
+      "Your order has been delivered. Thank you for choosing Zrochet!",
+      "We hope you love your purchase. If you enjoyed the product, please rate and review it.",
+    ],
+    ctaLabel: "Shop & Review",
+    ctaHref: `${getSiteUrl()}/#shop`,
+  });
 }
 
 export async function sendTestEmail(to: string): Promise<{ sent: boolean; error?: string }> {

@@ -7,9 +7,14 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { formatCartPrice } from "@/lib/cart";
 import { useCart } from "@/lib/cart-context";
-import { buildUpiPaymentUrl, UPI_ID } from "@/lib/upi";
+import { buildUpiPaymentUrl } from "@/lib/upi";
 
 type Step = "pay" | "proof";
+
+interface PaymentSettings {
+  upiId: string;
+  upiPayeeName: string;
+}
 
 function PaymentContent() {
   const router = useRouter();
@@ -28,11 +33,42 @@ function PaymentContent() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
   useEffect(() => {
-    if (method !== "upi" || !orderId || !Number.isFinite(amount) || amount <= 0) return;
+    fetch("/api/settings/payment")
+      .then((r) => r.json())
+      .then((data) =>
+        setPaymentSettings({
+          upiId: data.upiId,
+          upiPayeeName: data.upiPayeeName,
+        })
+      )
+      .catch(() =>
+        setPaymentSettings({
+          upiId: "sarathbhushan04@oksbi",
+          upiPayeeName: "Zrochet",
+        })
+      );
+  }, []);
 
-    const upiUrl = buildUpiPaymentUrl(amount, orderId);
+  useEffect(() => {
+    if (
+      method !== "upi" ||
+      !orderId ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      !paymentSettings
+    ) {
+      return;
+    }
+
+    const upiUrl = buildUpiPaymentUrl(
+      amount,
+      orderId,
+      paymentSettings.upiId,
+      paymentSettings.upiPayeeName
+    );
     QRCode.toDataURL(upiUrl, {
       width: 280,
       margin: 2,
@@ -40,7 +76,7 @@ function PaymentContent() {
     })
       .then(setQrDataUrl)
       .catch(() => setError("Could not generate QR code. Please use the UPI ID below."));
-  }, [amount, orderId, method]);
+  }, [amount, orderId, method, paymentSettings]);
 
   useEffect(() => {
     return () => {
@@ -118,7 +154,10 @@ function PaymentContent() {
     }
   }
 
-  const upiUrl = buildUpiPaymentUrl(amount, orderId);
+  const upiUrl =
+    paymentSettings && Number.isFinite(amount)
+      ? buildUpiPaymentUrl(amount, orderId, paymentSettings.upiId, paymentSettings.upiPayeeName)
+      : null;
 
   if (step === "proof") {
     return (
@@ -226,15 +265,19 @@ function PaymentContent() {
 
         <div className="mt-6 rounded-xl bg-beige/60 px-4 py-3 text-left">
           <p className="text-xs font-medium uppercase tracking-wider text-brown">UPI ID</p>
-          <p className="mt-1 font-mono text-sm font-medium text-brown-dark">{UPI_ID}</p>
+          <p className="mt-1 font-mono text-sm font-medium text-brown-dark">
+            {paymentSettings?.upiId ?? "Loading…"}
+          </p>
         </div>
 
-        <a
-          href={upiUrl}
-          className="mt-4 inline-block text-sm font-medium text-brown transition hover:text-brown-dark"
-        >
-          Open in UPI app →
-        </a>
+        {upiUrl && (
+          <a
+            href={upiUrl}
+            className="mt-4 inline-block text-sm font-medium text-brown transition hover:text-brown-dark"
+          >
+            Open in UPI app →
+          </a>
+        )}
       </div>
 
       <div className="mt-6 space-y-3">

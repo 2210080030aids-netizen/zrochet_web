@@ -66,6 +66,9 @@ model SiteSettings {
   address    String @default("123 Artisan Lane, India")
   footerText String @default("Handcrafted crochet creations made with love, patience, and a touch of magic.")
   heroImage  String @default("/images/welcome.png")
+  upiId      String @default("sarathbhushan04@oksbi")
+  upiPayeeName String @default("Zrochet")
+  instagramUrl String @default("https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6")
 }
 
 model Order {
@@ -86,5 +89,14 @@ model Order {
   approvedAt    DateTime?
   thankYouEmailSent Boolean @default(false)
   thankYouEmailError String?
+  rejectionReason String?
+  rejectedAt    DateTime?
+  rejectionEmailSent Boolean @default(false)
+  rejectionEmailError String?
+  reviewedAt    DateTime?
+  shippedAt     DateTime?
+  deliveryPartner String?
+  trackingId    String?
+  deliveredAt   DateTime?
   createdAt     DateTime  @default(now())
 }

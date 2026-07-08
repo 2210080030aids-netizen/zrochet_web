@@ -30,8 +30,6 @@ export default function PurchasePanel({ product }: PurchasePanelProps) {
 
   const [quantity, setQuantity] = useState(1);
 
-  const [wishlisted, setWishlisted] = useState(false);
-
   const [added, setAdded] = useState(false);
 
 
@@ -273,48 +271,6 @@ export default function PurchasePanel({ product }: PurchasePanelProps) {
         >
 
           Buy Now
-
-        </button>
-
-
-
-        <button
-
-          type="button"
-
-          onClick={() => setWishlisted(!wishlisted)}
-
-          className={`flex w-full items-center justify-center gap-1.5 rounded-full border py-2 text-xs font-medium transition ${
-
-            wishlisted
-
-              ? "border-red-200 bg-red-50 text-red-700"
-
-              : "border-sand text-text-muted hover:border-gold hover:text-brown-dark"
-
-          }`}
-
-        >
-
-          <svg
-
-            className="h-4 w-4"
-
-            fill={wishlisted ? "currentColor" : "none"}
-
-            viewBox="0 0 24 24"
-
-            stroke="currentColor"
-
-            strokeWidth="1.5"
-
-          >
-
-            <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-
-          </svg>
-
-          {wishlisted ? "Wishlisted" : "Add to Wishlist"}
 
         </button>
 

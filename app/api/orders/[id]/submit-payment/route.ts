@@ -4,6 +4,7 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { ORDER_STATUS } from "@/lib/order-status";
 import { orderPaymentProofPath } from "@/lib/payment-proof";
+import { sendPaymentReceivedEmail } from "@/lib/email";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -68,7 +69,22 @@ export async function POST(request: Request, { params }: RouteParams) {
       },
     });
 
-    return NextResponse.json({ order: updated, paymentProofUrl });
+    const emailResult = await sendPaymentReceivedEmail({
+      to: updated.email,
+      customerName: updated.name,
+      orderId: updated.id,
+    });
+
+    if (!emailResult.sent) {
+      console.warn("Payment received email failed:", emailResult.error);
+    }
+
+    return NextResponse.json({
+      order: updated,
+      paymentProofUrl,
+      emailSent: emailResult.sent,
+      emailError: emailResult.error,
+    });
   } catch (error) {
     console.error("Payment proof upload failed:", error);
     return NextResponse.json({ error: "Failed to submit payment proof" }, { status: 500 });

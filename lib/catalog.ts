@@ -118,6 +118,9 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
     footerText:
       "Handcrafted crochet creations made with love, patience, and a touch of magic.",
     heroImage: "/images/welcome.png",
+    upiId: process.env.NEXT_PUBLIC_UPI_ID?.trim() || "sarathbhushan04@oksbi",
+    upiPayeeName: process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || "Zrochet",
+    instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
   };
 }
 

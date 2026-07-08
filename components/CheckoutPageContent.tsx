@@ -6,26 +6,15 @@ import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 
-import { useState } from "react";
-
 import { formatCartPrice } from "@/lib/cart";
 import { useCart } from "@/lib/cart-context";
 
-
-
-type PaymentMethod = "upi" | "card";
-
-
-
 export default function CheckoutPageContent() {
-
   const router = useRouter();
 
   const { items, subtotal, totalItems, isReady } = useCart();
 
   const currency = items[0]?.currency ?? "INR";
-
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
 
 
 
@@ -81,11 +70,6 @@ export default function CheckoutPageContent() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    if (paymentMethod === "card") {
-      alert("Card payments are not available yet. Please use GPay / UPI for now.");
-      return;
-    }
 
     const form = new FormData(e.currentTarget);
 
@@ -293,113 +277,20 @@ export default function CheckoutPageContent() {
 
 
         <div>
-
           <h2 className="font-display text-lg font-semibold text-brown-dark">Payment method</h2>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-
-            <label
-
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
-
-                paymentMethod === "upi"
-
-                  ? "border-brown-dark bg-beige/40"
-
-                  : "border-sand hover:border-gold"
-
-              }`}
-
-            >
-
-              <input
-
-                type="radio"
-
-                name="payment"
-
-                value="upi"
-
-                checked={paymentMethod === "upi"}
-
-                onChange={() => setPaymentMethod("upi")}
-
-                className="mt-1"
-
-              />
-
-              <div>
-
-                <p className="font-medium text-brown-dark">GPay / UPI</p>
-
-                <p className="mt-1 text-xs text-text-muted">
-
-                  Scan a dynamic QR — amount matches your order total
-
-                </p>
-
-              </div>
-
-            </label>
-
-
-
-            <label
-
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
-
-                paymentMethod === "card"
-
-                  ? "border-brown-dark bg-beige/40"
-
-                  : "border-sand hover:border-gold"
-
-              }`}
-
-            >
-
-              <input
-
-                type="radio"
-
-                name="payment"
-
-                value="card"
-
-                checked={paymentMethod === "card"}
-
-                onChange={() => setPaymentMethod("card")}
-
-                className="mt-1"
-
-              />
-
-              <div>
-
-                <p className="font-medium text-brown-dark">Card</p>
-
-                <p className="mt-1 text-xs text-text-muted">Coming soon — use UPI for testing</p>
-
-              </div>
-
-            </label>
-
+          <div className="mt-4 rounded-xl border border-brown-dark bg-beige/40 p-4">
+            <p className="font-medium text-brown-dark">GPay / UPI</p>
+            <p className="mt-1 text-xs text-text-muted">
+              Scan a dynamic QR — amount matches your order total
+            </p>
           </div>
-
         </div>
 
-
-
         <button
-
           type="submit"
-
           className="w-full rounded-full bg-brown-dark py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
-
         >
-
-          {paymentMethod === "upi" ? "Proceed to Pay" : "Pay with Card"}
-
+          Proceed to Pay
         </button>
 
       </form>

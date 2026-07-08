@@ -20,4 +20,4 @@ if (dbUrl) {
   console.log("DATABASE_URL not configured — skipping migrate and seed.");
 }
 
-run("npx next start");
+run(`npx next start -H 0.0.0.0 -p ${process.env.PORT || 3000}`);

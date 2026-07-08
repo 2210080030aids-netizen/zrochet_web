@@ -5,7 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
 import { formatOrderStatus, orderStatusBadgeClass } from "@/lib/order-status";
 import AdminOrderActions from "@/components/AdminOrderActions";
+import AdminOrderTracking from "@/components/AdminOrderTracking";
 import { orderPaymentProofPath } from "@/lib/payment-proof";
+import { ORDER_STATUS } from "@/lib/order-status";
 import type { CartItem } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
@@ -96,6 +98,32 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                 <dd>{new Date(order.approvedAt).toLocaleString("en-IN")}</dd>
               </div>
             )}
+            {order.rejectedAt && (
+              <div>
+                <dt className="text-text-muted">Rejected</dt>
+                <dd>{new Date(order.rejectedAt).toLocaleString("en-IN")}</dd>
+              </div>
+            )}
+            {order.rejectionReason && (
+              <div>
+                <dt className="text-text-muted">Rejection reason</dt>
+                <dd>{order.rejectionReason}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-text-muted">Rejection email</dt>
+              <dd>
+                {order.rejectionEmailSent ? (
+                  <span className="text-emerald-700">Sent</span>
+                ) : order.status === "rejected" ? (
+                  <span className="text-amber-800">
+                    Not sent{order.rejectionEmailError ? ` — ${order.rejectionEmailError}` : ""}
+                  </span>
+                ) : (
+                  <span className="text-text-muted">—</span>
+                )}
+              </dd>
+            </div>
             <div>
               <dt className="text-text-muted">Thank-you email</dt>
               <dd>
@@ -183,8 +211,31 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
             status={order.status}
             thankYouEmailSent={order.thankYouEmailSent}
             thankYouEmailError={order.thankYouEmailError}
+            rejectionReason={order.rejectionReason}
+            rejectionEmailSent={order.rejectionEmailSent}
+            rejectionEmailError={order.rejectionEmailError}
           />
         </div>
+
+        {order.status === ORDER_STATUS.APPROVED && (
+          <div className="mt-8 border-t border-sand pt-6">
+            <h3 className="font-display text-lg font-semibold text-brown-dark">Order Tracking</h3>
+            <p className="mt-1 text-sm text-text-muted">
+              Update fulfillment stages. Changes appear immediately on the customer Track My Order
+              page.
+            </p>
+            <div className="mt-4">
+              <AdminOrderTracking
+                orderId={order.id}
+                reviewedAt={order.reviewedAt}
+                shippedAt={order.shippedAt}
+                deliveredAt={order.deliveredAt}
+                deliveryPartner={order.deliveryPartner}
+                trackingId={order.trackingId}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SiteSettingsData } from "@/lib/catalog";
+import { formatInstagramLabel } from "@/lib/instagram";
 
 const DEFAULT_SETTINGS: SiteSettingsData = {
   email: "hello@zrochet.com",
@@ -8,6 +9,9 @@ const DEFAULT_SETTINGS: SiteSettingsData = {
   footerText:
     "Handcrafted crochet creations made with love, patience, and a touch of magic.",
   heroImage: "/images/welcome.png",
+  upiId: "sarathbhushan04@oksbi",
+  upiPayeeName: "Zrochet",
+  instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
 };
 
 export default function Footer({ settings = DEFAULT_SETTINGS }: { settings?: SiteSettingsData }) {
@@ -32,6 +36,7 @@ export default function Footer({ settings = DEFAULT_SETTINGS }: { settings?: Sit
               <li><Link href="/#collections" className="transition hover:text-brown-dark">Collections</Link></li>
               <li><Link href="/#about" className="transition hover:text-brown-dark">About Us</Link></li>
               <li><Link href="/#contact" className="transition hover:text-brown-dark">Contact</Link></li>
+              <li><Link href="/track" className="transition hover:text-brown-dark">Track Order</Link></li>
             </ul>
           </div>
 
@@ -41,6 +46,18 @@ export default function Footer({ settings = DEFAULT_SETTINGS }: { settings?: Sit
               <li>{settings.email}</li>
               <li>{settings.phone}</li>
               <li style={{ whiteSpace: "pre-line" }}>{settings.address}</li>
+              {settings.instagramUrl && (
+                <li>
+                  <a
+                    href={settings.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition hover:text-brown-dark"
+                  >
+                    Instagram {formatInstagramLabel(settings.instagramUrl)}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>

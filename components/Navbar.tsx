@@ -7,8 +7,8 @@ import { useCart } from "@/lib/cart-context";
 
 const NAV_LINKS = [
   { href: "/#home", label: "Home", id: "home" },
-  { href: "/#shop", label: "Shop", id: "shop" },
   { href: "/#collections", label: "Collections", id: "collections" },
+  { href: "/#shop", label: "Shop", id: "shop" },
   { href: "/#about", label: "About", id: "about" },
   { href: "/#contact", label: "Contact", id: "contact" },
 ];
@@ -78,10 +78,19 @@ export default function Navbar() {
 
     function updateActiveSection() {
       const scrollPos = window.scrollY + 120;
+      const nearBottom =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
+
+      if (nearBottom && tracked.some((item) => item.nav === "contact")) {
+        setActiveSection("contact");
+        return;
+      }
+
       let current = "home";
 
       tracked.forEach(({ element, nav }) => {
-        if (scrollPos >= element.offsetTop) {
+        const top = element.getBoundingClientRect().top + window.scrollY;
+        if (scrollPos >= top) {
           current = nav;
         }
       });
@@ -91,7 +100,11 @@ export default function Navbar() {
 
     updateActiveSection();
     window.addEventListener("scroll", updateActiveSection, { passive: true });
-    return () => window.removeEventListener("scroll", updateActiveSection);
+    window.addEventListener("resize", updateActiveSection);
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
   }, [isHome]);
 
   function isActive(id: string) {
@@ -125,6 +138,13 @@ export default function Navbar() {
             ))}
           </nav>
 
+          <Link
+            href="/track"
+            className={navLinkClass(pathname === "/track")}
+          >
+            Track My Order
+          </Link>
+
           <CartButton />
 
           <button
@@ -155,6 +175,15 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/track"
+            className={`block py-3 text-sm font-medium ${
+              pathname === "/track" ? "text-brown-dark" : "text-text-muted"
+            }`}
+            onClick={closeMenu}
+          >
+            Track My Order
+          </Link>
           <Link
             href="/cart"
             className="block py-3 text-sm font-medium text-brown-dark"

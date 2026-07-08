@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
-import Providers from "@/components/Providers";
 import LayoutShell from "@/components/LayoutShell";
 import { getSiteSettings } from "@/lib/catalog";
 
@@ -18,6 +17,9 @@ const body = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://zrochetweb-production.up.railway.app"
+  ),
   title: "Zrochet — Handcrafted Crochet Creations",
   description: "Premium handcrafted crochet bags, purses, and gifts made with love.",
 };
@@ -28,9 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="min-h-screen flex flex-col">
-        <Providers>
-          <LayoutShell footerSettings={footerSettings}>{children}</LayoutShell>
-        </Providers>
+        <LayoutShell footerSettings={footerSettings}>{children}</LayoutShell>
       </body>
     </html>
   );

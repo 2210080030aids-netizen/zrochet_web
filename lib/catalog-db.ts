@@ -120,6 +120,9 @@ export interface SiteSettingsData {
   address: string;
   footerText: string;
   heroImage: string;
+  upiId: string;
+  upiPayeeName: string;
+  instagramUrl: string;
 }
 
 const DEFAULT_SETTINGS: SiteSettingsData = {
@@ -129,6 +132,9 @@ const DEFAULT_SETTINGS: SiteSettingsData = {
   footerText:
     "Handcrafted crochet creations made with love, patience, and a touch of magic.",
   heroImage: "/images/welcome.png",
+  upiId: process.env.NEXT_PUBLIC_UPI_ID?.trim() || "sarathbhushan04@oksbi",
+  upiPayeeName: process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || "Zrochet",
+  instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
 };
 
 export async function fetchSiteSettings(): Promise<SiteSettingsData> {
@@ -141,6 +147,9 @@ export async function fetchSiteSettings(): Promise<SiteSettingsData> {
       address: row.address,
       footerText: row.footerText,
       heroImage: row.heroImage,
+      upiId: row.upiId,
+      upiPayeeName: row.upiPayeeName,
+      instagramUrl: row.instagramUrl || DEFAULT_SETTINGS.instagramUrl,
     };
   } catch {
     return DEFAULT_SETTINGS;

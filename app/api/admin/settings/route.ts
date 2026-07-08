@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { normalizeInstagramUrl } from "@/lib/instagram";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -17,6 +18,8 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
+  const instagramUrl = normalizeInstagramUrl(String(body.instagramUrl ?? ""));
+
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
     update: {
@@ -25,6 +28,9 @@ export async function PUT(request: Request) {
       address: body.address,
       footerText: body.footerText,
       heroImage: body.heroImage,
+      upiId: body.upiId,
+      upiPayeeName: body.upiPayeeName,
+      instagramUrl,
     },
     create: {
       id: 1,
@@ -33,6 +39,9 @@ export async function PUT(request: Request) {
       address: body.address,
       footerText: body.footerText,
       heroImage: body.heroImage,
+      upiId: body.upiId,
+      upiPayeeName: body.upiPayeeName,
+      instagramUrl,
     },
   });
 

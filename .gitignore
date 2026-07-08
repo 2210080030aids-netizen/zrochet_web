@@ -30,6 +30,10 @@ yarn-error.log*
 /public/uploads/payments/*
 !/public/uploads/payments/.gitkeep
 
+# admin hero images (local only; re-upload after Railway redeploy if needed)
+/public/uploads/hero/*
+!/public/uploads/hero/.gitkeep
+
 # typescript
 next-env.d.ts
 tsconfig.tsbuildinfo

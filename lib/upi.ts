@@ -1,10 +1,15 @@
 export const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID ?? "sarathbhushan04@oksbi";
 export const UPI_PAYEE_NAME = process.env.NEXT_PUBLIC_UPI_PAYEE_NAME ?? "Zrochet";
 
-export function buildUpiPaymentUrl(amount: number, orderId: string): string {
+export function buildUpiPaymentUrl(
+  amount: number,
+  orderId: string,
+  upiId: string = process.env.NEXT_PUBLIC_UPI_ID ?? "sarathbhushan04@oksbi",
+  payeeName: string = process.env.NEXT_PUBLIC_UPI_PAYEE_NAME ?? "Zrochet"
+): string {
   const params = new URLSearchParams({
-    pa: UPI_ID,
-    pn: UPI_PAYEE_NAME,
+    pa: upiId,
+    pn: payeeName,
     am: amount.toFixed(2),
     cu: "INR",
     tn: `Zrochet-${orderId}`,

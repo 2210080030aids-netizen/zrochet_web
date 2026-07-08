@@ -67,6 +67,12 @@ function SuccessContent() {
           Back to Home
         </Link>
         <Link
+          href={orderId ? `/track?orderId=${encodeURIComponent(orderId)}` : "/track"}
+          className="rounded-full border border-sand px-8 py-3.5 text-sm font-medium text-brown-dark transition hover:border-gold"
+        >
+          Track My Order
+        </Link>
+        <Link
           href="/#shop"
           className="rounded-full border border-sand px-8 py-3.5 text-sm font-medium text-brown-dark transition hover:border-gold"
         >

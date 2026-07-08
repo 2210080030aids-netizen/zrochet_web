@@ -8,9 +8,15 @@ import {
   getSiteSettings,
 } from "@/lib/catalog";
 
+const FEATURED_PRODUCTS_LIMIT = 12;
+
+const PRIMARY_BTN =
+  "inline-flex rounded-full bg-brown-dark px-8 py-3.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-brown";
+
 export default async function HomePageContent() {
   const [catalog, settings] = await Promise.all([getCatalog(), getSiteSettings()]);
   const products = catalog.products;
+  const featuredProducts = products.slice(0, FEATURED_PRODUCTS_LIMIT);
   const collectionCards = catalog.categories.map((category) => {
     const categoryProducts = products.filter((product) => product.category === category.slug);
     const featured = categoryProducts[0];
@@ -39,10 +45,7 @@ export default async function HomePageContent() {
               Discover beautifully handmade crochet bags, purses, and thoughtful gifts —
               each piece woven with care, warmth, and timeless charm.
             </p>
-            <Link
-              href="#shop"
-              className="mt-8 inline-flex rounded-full bg-brown-dark px-8 py-3.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-brown"
-            >
+            <Link href="#shop" className={`mt-8 ${PRIMARY_BTN}`}>
               Shop Now
             </Link>
           </div>
@@ -112,10 +115,17 @@ export default async function HomePageContent() {
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id + product.category} product={product} />
             ))}
           </div>
+          {products.length > 0 && (
+            <div className="mt-10 text-center">
+              <Link href="/shop" className={PRIMARY_BTN}>
+                View more
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -150,10 +160,7 @@ export default async function HomePageContent() {
               <li>✦ Eco-conscious yarn &amp; packaging</li>
               <li>✦ Custom orders welcome</li>
             </ul>
-            <Link
-              href="#contact"
-              className="mt-8 inline-flex rounded-full border border-brown-dark px-8 py-3.5 text-sm font-medium uppercase tracking-wide text-brown-dark transition hover:bg-brown-dark hover:text-white"
-            >
+            <Link href="#contact" className={`mt-8 ${PRIMARY_BTN}`}>
               Get in Touch
             </Link>
           </div>
@@ -200,33 +207,6 @@ export default async function HomePageContent() {
               </blockquote>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="bg-brown-dark py-16 text-white lg:py-20">
-        <div className="mx-auto max-w-xl px-5 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">Stay Connected</p>
-          <h2 className="font-display mt-2 text-3xl font-semibold md:text-4xl">
-            Join the Zrochet Circle
-          </h2>
-          <p className="mt-4 text-white/75">
-            Be the first to know about new collections, exclusive offers, and behind-the-scenes
-            stories from our studio.
-          </p>
-          <form className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <input
-              type="email"
-              placeholder="Your email address"
-              aria-label="Email address"
-              className="flex-1 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none focus:border-gold"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-brown-dark transition hover:bg-beige"
-            >
-              Subscribe
-            </button>
-          </form>
         </div>
       </section>
     </>
