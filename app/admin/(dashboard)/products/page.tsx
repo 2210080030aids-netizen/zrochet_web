@@ -67,7 +67,8 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Collection</th>
                 <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
+                <th className="px-4 py-3 font-medium">Qty</th>
+              <th className="px-4 py-3 font-medium">Stock</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
@@ -77,8 +78,9 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                   <td className="px-4 py-3 font-medium text-brown-dark">{product.productId}</td>
                   <td className="px-4 py-3">{product.name}</td>
                   <td className="px-4 py-3 text-text-muted">{product.collection.name}</td>
-                  <td className="px-4 py-3">{formatCartPrice(product.price, product.currency)}</td>
-                  <td className="px-4 py-3">
+                <td className="px-4 py-3">{formatCartPrice(product.price, product.currency)}</td>
+                <td className="px-4 py-3 font-medium text-brown-dark">{product.quantity}</td>
+                <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         product.inStock

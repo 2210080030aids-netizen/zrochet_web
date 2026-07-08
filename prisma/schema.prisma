@@ -35,6 +35,7 @@ model Product {
   sizes           Json       @default("[\"One Size\"]")
   rating          Float      @default(4.8)
   reviewCount     Int        @default(24)
+  quantity        Int        @default(0)
   inStock         Boolean    @default(true)
   deliveryDays    String     @default("3–5 business days")
   media           Json       @default("[]")

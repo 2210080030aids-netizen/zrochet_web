@@ -82,7 +82,7 @@ export default function NewProductPage() {
       name: String(form.get("name")),
       price: Number(form.get("price")),
       description: String(form.get("description")),
-      inStock: form.get("inStock") === "on",
+      quantity: Number(form.get("quantity")),
       colorName: colorName.trim(),
       colorSwatch,
       linkToProductId: linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
@@ -217,9 +217,20 @@ export default function NewProductPage() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-sm font-medium text-brown-dark">
-          <input type="checkbox" name="inStock" defaultChecked />
-          In stock
+        <label className="block text-sm font-medium text-brown-dark">
+          Quantity in stock
+          <input
+            name="quantity"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={1}
+            required
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          />
+          <span className="mt-2 block text-xs text-text-muted">
+            Set to 0 to mark the product out of stock.
+          </span>
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button

@@ -31,6 +31,7 @@ function mapProduct(row: {
   sizes: unknown;
   rating: number;
   reviewCount: number;
+  quantity: number;
   inStock: boolean;
   deliveryDays: string;
   media: unknown;
@@ -54,6 +55,7 @@ function mapProduct(row: {
     sizes: parseJsonArray<string>(row.sizes, ["One Size"]),
     rating: row.rating,
     reviewCount: row.reviewCount,
+    quantity: row.quantity,
     inStock: row.inStock,
     deliveryDays: row.deliveryDays,
     media: parseJsonArray<ProductMedia>(row.media, []).map((item) => ({

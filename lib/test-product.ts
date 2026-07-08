@@ -24,6 +24,7 @@ export const TEST_BAG_PRODUCT: Product = {
   sizes: ["One Size"],
   rating: 4.8,
   reviewCount: 12,
+  quantity: 99,
   inStock: true,
   deliveryDays: "3–5 business days",
   media: [
@@ -69,6 +70,7 @@ export const TEST_BAG_PRODUCT_BLUE: Product = {
   sizes: ["One Size"],
   rating: 4.8,
   reviewCount: 12,
+  quantity: 99,
   inStock: true,
   deliveryDays: "3–5 business days",
   media: [

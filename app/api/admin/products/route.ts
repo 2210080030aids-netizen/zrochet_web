@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { syncProductColorVariants } from "@/lib/color-variants";
 import { allocateNextProductId } from "@/lib/product-id";
+import { productStockFields } from "@/lib/product-stock";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
           name: body.name,
           price: body.price,
           description: body.description,
-          inStock: body.inStock ?? true,
+          ...productStockFields(body.quantity),
           media: body.media ?? [],
           currency: "INR",
           colors: [body.colorName.trim()],

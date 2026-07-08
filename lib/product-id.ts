@@ -197,6 +197,7 @@ async function renameProductIdInCategory(
       sizes: toJsonValue(productData.sizes),
       rating: productData.rating,
       reviewCount: productData.reviewCount,
+      quantity: productData.quantity,
       inStock: productData.inStock,
       deliveryDays: productData.deliveryDays,
       media: toJsonValue(productData.media),

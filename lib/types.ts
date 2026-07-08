@@ -36,6 +36,7 @@ export interface Product {
   sizes: string[];
   rating: number;
   reviewCount: number;
+  quantity: number;
   inStock: boolean;
   deliveryDays: string;
   media: ProductMedia[];

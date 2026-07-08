@@ -65,6 +65,14 @@ async function main() {
 
   console.log("Seeding products...");
   for (const product of catalog.products) {
+    const quantity =
+      typeof product.quantity === "number"
+        ? Math.max(0, Math.floor(product.quantity))
+        : product.inStock === false
+          ? 0
+          : 10;
+    const inStock = quantity > 0;
+
     await prisma.product.upsert({
       where: {
         categorySlug_productId: {
@@ -87,7 +95,8 @@ async function main() {
         sizes: product.sizes ?? ["One Size"],
         rating: product.rating ?? 4.8,
         reviewCount: product.reviewCount ?? 24,
-        inStock: product.inStock ?? true,
+        quantity,
+        inStock,
         deliveryDays: product.deliveryDays ?? "3–5 business days",
         media: product.media ?? [],
       },
@@ -108,7 +117,8 @@ async function main() {
         sizes: product.sizes ?? ["One Size"],
         rating: product.rating ?? 4.8,
         reviewCount: product.reviewCount ?? 24,
-        inStock: product.inStock ?? true,
+        quantity,
+        inStock,
         deliveryDays: product.deliveryDays ?? "3–5 business days",
         media: product.media ?? [],
       },

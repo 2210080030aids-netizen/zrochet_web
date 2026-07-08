@@ -9,6 +9,7 @@ import {
   type SiteSettingsData,
 } from "./catalog-db";
 import { resolveProductMediaSrc } from "./product-media-storage";
+import { inStockFromQuantity, normalizeQuantity } from "./product-stock";
 import { isDatabaseConfigured } from "./prisma";
 import { normalizeProductId } from "./product-id";
 import type { Catalog, Product, Category, ProductMedia } from "./types";
@@ -28,6 +29,10 @@ function normalizeProduct(raw: RawProduct): Product {
     }));
   }
 
+  const quantity = normalizeQuantity(
+    typeof raw.quantity === "number" ? raw.quantity : raw.inStock === false ? 0 : 10
+  );
+
   return {
     ...raw,
     media: media.map((item) => ({
@@ -38,6 +43,8 @@ function normalizeProduct(raw: RawProduct): Product {
     colorVariants: raw.colorVariants ?? [],
     colors: raw.colors ?? [],
     sizes: raw.sizes ?? ["One Size"],
+    quantity,
+    inStock: inStockFromQuantity(quantity),
   };
 }
 

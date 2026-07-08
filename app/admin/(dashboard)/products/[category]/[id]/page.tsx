@@ -17,6 +17,7 @@ interface ProductData {
   description: string;
   material: string;
   dimensions: string;
+  quantity: number;
   inStock: boolean;
   colors: unknown;
   colorVariants: unknown;
@@ -103,7 +104,7 @@ export default function EditProductPage({
       description: String(form.get("description")),
       material: String(form.get("material")),
       dimensions: String(form.get("dimensions")),
-      inStock: form.get("inStock") === "on",
+      quantity: Number(form.get("quantity")),
       colorName: colorName.trim(),
       colorSwatch,
       linkToProductId:
@@ -239,9 +240,20 @@ export default function EditProductPage({
             />
           </div>
         </div>
-        <label className="flex items-center gap-2 text-sm font-medium text-brown-dark">
-          <input type="checkbox" name="inStock" defaultChecked={product.inStock} />
-          In stock
+        <label className="block text-sm font-medium text-brown-dark">
+          Quantity in stock
+          <input
+            name="quantity"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={product.quantity}
+            required
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          />
+          <span className="mt-2 block text-xs text-text-muted">
+            Status updates automatically: {product.quantity > 0 ? "In stock" : "Out of stock"}.
+          </span>
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex flex-wrap gap-3">

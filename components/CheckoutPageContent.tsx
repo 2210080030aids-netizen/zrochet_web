@@ -92,6 +92,10 @@ export default function CheckoutPageContent() {
       if (res.ok) {
         const data = await res.json();
         orderId = data.orderId;
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Could not create order. Please try again.");
+        return;
       }
     } catch {
       // handled below

@@ -5,6 +5,7 @@ import {
   syncProductColorVariants,
 } from "@/lib/color-variants";
 import { renumberProductsAfterDelete, resolveStoredProductId } from "@/lib/product-id";
+import { productStockFields } from "@/lib/product-stock";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
@@ -62,7 +63,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       description: body.description,
       material: body.material,
       dimensions: body.dimensions,
-      inStock: body.inStock,
+      ...productStockFields(body.quantity),
       media: body.media ?? [],
       colors: [body.colorName.trim()],
     },

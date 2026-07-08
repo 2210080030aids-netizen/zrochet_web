@@ -5,6 +5,7 @@ import { ORDER_STATUS } from "@/lib/order-status";
 import { sendThankYouEmail, sendRejectionEmail, sendShippedEmail, sendDeliveredEmail } from "@/lib/email";
 import { generateReceiptPdf } from "@/lib/receipt-pdf";
 import { buildTrackingUpdateData, type FulfillmentStage } from "@/lib/order-tracking";
+import { deductStockForOrder } from "@/lib/product-stock";
 import type { CartItem } from "@/lib/cart";
 
 interface RouteParams {
@@ -234,6 +235,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   if (action !== "approve") {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
+
+  if (order.status === ORDER_STATUS.APPROVED) {
+    return NextResponse.json({ error: "Order is already approved" }, { status: 400 });
+  }
+
+  const items = order.items as unknown as CartItem[];
+  await deductStockForOrder(items);
 
   const updated = await prisma.order.update({
     where: { id },
