@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/types";
+import ProductImage from "@/components/ProductImage";
 import { formatOriginalPrice, formatPrice, getCoverImage, getMediaCount } from "@/lib/catalog";
 
 interface ProductCardProps {
@@ -16,7 +16,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       className="group overflow-hidden rounded-2xl bg-white luxury-shadow transition-all duration-300 hover:-translate-y-1.5 hover:luxury-shadow-lg"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-beige">
-        <Image
+        <ProductImage
           src={getCoverImage(product)}
           alt={product.name}
           fill

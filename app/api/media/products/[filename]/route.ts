@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import { NextResponse } from "next/server";
+import { readProductMediaFile } from "@/lib/product-media-db";
 import {
   legacyProductUploadFilePath,
   mimeForProductUpload,
@@ -10,7 +11,11 @@ interface RouteParams {
   params: Promise<{ filename: string }>;
 }
 
-async function readProductMedia(filename: string): Promise<Buffer> {
+function safeFilename(filename: string): string {
+  return decodeURIComponent(filename).split(/[/\\]/).pop() || filename;
+}
+
+async function readProductMediaFromDisk(filename: string): Promise<Buffer> {
   const candidates = [
     resolveProductUploadFilePath(filename),
     legacyProductUploadFilePath(filename),
@@ -29,10 +34,21 @@ async function readProductMedia(filename: string): Promise<Buffer> {
 
 export async function GET(_request: Request, { params }: RouteParams) {
   const { filename } = await params;
+  const safeName = safeFilename(filename);
 
   try {
-    const buffer = await readProductMedia(filename);
-    const mime = mimeForProductUpload(filename);
+    const stored = await readProductMediaFile(safeName);
+    if (stored) {
+      return new NextResponse(new Uint8Array(stored.data), {
+        headers: {
+          "Content-Type": stored.mime,
+          "Cache-Control": "public, max-age=86400, immutable",
+        },
+      });
+    }
+
+    const buffer = await readProductMediaFromDisk(safeName);
+    const mime = mimeForProductUpload(safeName);
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

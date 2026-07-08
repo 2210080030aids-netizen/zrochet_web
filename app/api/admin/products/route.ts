@@ -47,6 +47,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Color name is required" }, { status: 400 });
   }
 
+  const media = Array.isArray(body.media) ? body.media : [];
+  if (!media.length) {
+    return NextResponse.json({ error: "Add at least one product image" }, { status: 400 });
+  }
+  if (media.some((item: { src?: string }) => !item?.src || item.src.startsWith("blob:"))) {
+    return NextResponse.json(
+      { error: "Wait for image uploads to finish before saving the product" },
+      { status: 400 }
+    );
+  }
+
   try {
     const created = await prisma.$transaction(async (tx) => {
       const productId = await allocateNextProductId(body.categorySlug, tx);

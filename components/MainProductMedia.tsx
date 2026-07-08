@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import ProductImage from "@/components/ProductImage";
 import type { ProductMedia } from "@/lib/types";
 import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 
@@ -83,7 +83,7 @@ export default function MainProductMedia({
             Your browser does not support video playback.
           </video>
         ) : (
-          <Image
+          <ProductImage
             src={mediaSrc}
             alt={alt}
             width={900}

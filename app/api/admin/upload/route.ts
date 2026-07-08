@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { saveProductMediaFile } from "@/lib/product-media-db";
 import {
   buildProductUploadFilename,
   getProductUploadsDir,
@@ -63,7 +64,13 @@ export async function POST(request: Request) {
   await mkdir(uploadsDir, { recursive: true });
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadsDir, filename), buffer);
+  await saveProductMediaFile(filename, file.type, buffer);
+
+  try {
+    await writeFile(path.join(uploadsDir, filename), buffer);
+  } catch (error) {
+    console.warn("Could not cache product upload on disk:", error);
+  }
 
   const src = productMediaPublicPath(filename);
   const type = file.type.startsWith("video/") ? "video" : "image";

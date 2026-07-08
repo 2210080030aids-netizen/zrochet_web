@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import ProductImage from "@/components/ProductImage";
 import type { ProductMedia } from "@/lib/types";
-import { resolveProductMediaSrc } from "@/lib/product-media-storage";
 
 interface ThumbnailRailProps {
   media: ProductMedia[];
@@ -34,7 +33,7 @@ export default function ThumbnailRail({
           {item.type === "video" ? (
             <>
               {item.poster ? (
-                <Image src={item.poster} alt="" fill className="object-cover" sizes="76px" />
+                <ProductImage src={item.poster} alt="" fill className="object-cover" sizes="76px" />
               ) : (
                 <div className="absolute inset-0 bg-brown-dark" />
               )}
@@ -45,13 +44,12 @@ export default function ThumbnailRail({
               </div>
             </>
           ) : (
-            <Image
-              src={resolveProductMediaSrc(item.src)}
+            <ProductImage
+              src={item.src}
               alt=""
               fill
               className="object-cover"
               sizes="76px"
-              unoptimized
             />
           )}
         </button>

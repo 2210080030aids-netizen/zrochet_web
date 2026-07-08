@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import ProductImage from "@/components/ProductImage";
 import {
   getCatalog,
   getCoverImage,
@@ -28,7 +29,7 @@ export default async function HomePageContent() {
       image: featured ? getCoverImage(featured) : settings.heroImage,
     };
   });
-  const heroProduct = (await getProduct("oreo-bags", "B5")) ?? products[0];
+  const heroProduct = (await getProduct("oreo-bags", "ob1")) ?? products[0];
 
   return (
     <>
@@ -79,7 +80,7 @@ export default async function HomePageContent() {
                 href={`/${item.slug}`}
                 className="group relative aspect-[3/4] overflow-hidden rounded-2xl luxury-shadow transition duration-300 hover:-translate-y-1.5 hover:luxury-shadow-lg"
               >
-                <Image
+                <ProductImage
                   src={item.image}
                   alt={item.title}
                   fill
@@ -132,7 +133,7 @@ export default async function HomePageContent() {
       <section id="about" className="bg-beige py-16 lg:py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-2 lg:gap-16">
           <div className="overflow-hidden rounded-2xl luxury-shadow-md">
-            <Image
+            <ProductImage
               src={getCoverImage(heroProduct)}
               alt="Artisan crafting crochet by hand"
               width={700}
