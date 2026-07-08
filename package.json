@@ -12,6 +12,7 @@
     "generate:minibags": "node scripts/generate-catalog.js",
     "watch:minibags": "node scripts/watch-minibag-catalog.js",
     "db:seed": "node scripts/seed-database.js",
+    "db:migrate-product-ids": "node scripts/migrate-product-ids.js",
     "db:migrate": "node scripts/run-prisma.js migrate deploy",
     "db:studio": "node scripts/run-prisma.js studio",
     "setup:local": "node scripts/run-prisma.js generate && node scripts/run-prisma.js migrate deploy && npm run db:seed",

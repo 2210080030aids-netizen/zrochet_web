@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { normalizeProductId, resolveStoredProductId } from "@/lib/product-id";
 import type {
   Catalog,
   Category,
@@ -105,9 +106,12 @@ export async function fetchProductFromDb(
   categorySlug: string,
   id: string
 ): Promise<Product | undefined> {
+  const storedId = await resolveStoredProductId(categorySlug, id);
+  if (!storedId) return undefined;
+
   const row = await prisma.product.findUnique({
     where: {
-      categorySlug_productId: { categorySlug, productId: id.toUpperCase() },
+      categorySlug_productId: { categorySlug, productId: storedId },
     },
     include: { collection: true },
   });

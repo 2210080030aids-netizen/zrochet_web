@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { syncProductColorVariants } from "@/lib/color-variants";
+import { allocateNextProductId } from "@/lib/product-id";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
@@ -23,7 +24,9 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ products });
+  const nextProductId = await allocateNextProductId(categorySlug);
+
+  return NextResponse.json({ products, nextProductId });
 }
 
 export async function POST(request: Request) {
@@ -45,40 +48,44 @@ export async function POST(request: Request) {
   }
 
   try {
-    const product = await prisma.product.create({
-      data: {
-        productId: body.productId.toUpperCase(),
-        categorySlug: body.categorySlug,
-        name: body.name,
-        price: body.price,
-        description: body.description,
-        inStock: body.inStock ?? true,
-        media: body.media ?? [],
-        currency: "INR",
-        colors: [body.colorName.trim()],
-        colorVariants: [],
-      },
+    const created = await prisma.$transaction(async (tx) => {
+      const productId = await allocateNextProductId(body.categorySlug, tx);
+
+      return tx.product.create({
+        data: {
+          productId,
+          categorySlug: body.categorySlug,
+          name: body.name,
+          price: body.price,
+          description: body.description,
+          inStock: body.inStock ?? true,
+          media: body.media ?? [],
+          currency: "INR",
+          colors: [body.colorName.trim()],
+          colorVariants: [],
+        },
+      });
     });
 
     await syncProductColorVariants({
       categorySlug: body.categorySlug,
-      productId: product.productId,
+      productId: created.productId,
       colorName: body.colorName,
       colorSwatch: body.colorSwatch,
       linkToProductId: body.standalone ? null : body.linkToProductId || null,
       standalone: Boolean(body.standalone),
     });
 
-    const updated = await prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: {
         categorySlug_productId: {
           categorySlug: body.categorySlug,
-          productId: product.productId,
+          productId: created.productId,
         },
       },
     });
 
-    return NextResponse.json({ product: updated }, { status: 201 });
+    return NextResponse.json({ product }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Product already exists or invalid data" }, { status: 400 });
   }

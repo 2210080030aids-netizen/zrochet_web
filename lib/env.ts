@@ -9,17 +9,20 @@ export function isRailwayRuntime(): boolean {
 
 /** Resolves a Postgres URL for the current environment. */
 export function getDatabaseUrl(): string | undefined {
-  const url = (
-    process.env.DATABASE_URL?.trim() ||
-    process.env.DATABASE_PUBLIC_URL?.trim() ||
-    ""
-  );
-  if (!url) return undefined;
-  if (url.includes("PASSWORD@HOST") || url.includes("@HOST:")) return undefined;
+  const rawUrl = isRailwayRuntime()
+    ? process.env.DATABASE_URL?.trim() || ""
+    : (
+        process.env.DATABASE_URL?.trim() ||
+        process.env.DATABASE_PUBLIC_URL?.trim() ||
+        ""
+      );
+
+  if (!rawUrl) return undefined;
+  if (rawUrl.includes("PASSWORD@HOST") || rawUrl.includes("@HOST:")) return undefined;
   // Internal Railway hostname only works inside Railway, not on your PC
-  if (url.includes("postgres.railway.internal") && !isRailwayRuntime()) return undefined;
-  if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) return undefined;
-  return url;
+  if (rawUrl.includes("postgres.railway.internal") && !isRailwayRuntime()) return undefined;
+  if (!rawUrl.startsWith("postgresql://") && !rawUrl.startsWith("postgres://")) return undefined;
+  return rawUrl;
 }
 
 export function isDatabaseConfigured(): boolean {

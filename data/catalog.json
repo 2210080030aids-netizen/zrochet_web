@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T06:29:33.618Z",
+  "generatedAt": "2026-07-08T16:37:32.770Z",
   "categories": [
     {
       "slug": "mini-bags",
@@ -29,7 +29,7 @@
   ],
   "products": [
     {
-      "id": "B9",
+      "id": "hb1",
       "category": "handle-bags",
       "collection": "Handle Bag Collection",
       "name": "Artisan Top-Handle Bag",
@@ -66,7 +66,7 @@
       ]
     },
     {
-      "id": "B1",
+      "id": "mb1",
       "category": "mini-bags",
       "collection": "Mini Bag Collection",
       "name": "Bee Stripe Mini Bag",
@@ -85,12 +85,12 @@
         {
           "name": "Yellow / Black",
           "swatch": "#EAB308",
-          "productId": "B1"
+          "productId": "mb1"
         },
         {
           "name": "Blue",
           "swatch": "#2563EB",
-          "productId": "B2"
+          "productId": "mb2"
         }
       ],
       "sizes": [
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "id": "B2",
+      "id": "mb2",
       "category": "mini-bags",
       "collection": "Mini Bag Collection",
       "name": "Blue Classic Mini Bag",
@@ -143,12 +143,12 @@
         {
           "name": "Yellow / Black",
           "swatch": "#EAB308",
-          "productId": "B1"
+          "productId": "mb1"
         },
         {
           "name": "Blue",
           "swatch": "#2563EB",
-          "productId": "B2"
+          "productId": "mb2"
         }
       ],
       "sizes": [
@@ -182,7 +182,7 @@
       ]
     },
     {
-      "id": "B5",
+      "id": "ob1",
       "category": "oreo-bags",
       "collection": "Oreo Signature Collection",
       "name": "Oreo Swirl Signature Bag",
@@ -201,12 +201,12 @@
         {
           "name": "Black / White",
           "swatch": "#1F2937",
-          "productId": "B5"
+          "productId": "ob1"
         },
         {
           "name": "Charcoal / Cream",
           "swatch": "#9CA3AF",
-          "productId": "B6"
+          "productId": "ob2"
         }
       ],
       "sizes": [
@@ -231,7 +231,7 @@
       ]
     },
     {
-      "id": "B6",
+      "id": "ob2",
       "category": "oreo-bags",
       "collection": "Oreo Signature Collection",
       "name": "Oreo Classic Signature Bag",
@@ -250,12 +250,12 @@
         {
           "name": "Black / White",
           "swatch": "#1F2937",
-          "productId": "B5"
+          "productId": "ob1"
         },
         {
           "name": "Charcoal / Cream",
           "swatch": "#9CA3AF",
-          "productId": "B6"
+          "productId": "ob2"
         }
       ],
       "sizes": [
@@ -274,7 +274,7 @@
       ]
     },
     {
-      "id": "B3",
+      "id": "pb1",
       "category": "party-bags",
       "collection": "Party Bag Collection",
       "name": "Soirée Glam Party Bag",
@@ -293,12 +293,12 @@
         {
           "name": "Champagne",
           "swatch": "#D4AF37",
-          "productId": "B3"
+          "productId": "pb1"
         },
         {
           "name": "Pearl White",
           "swatch": "#F5F0E8",
-          "productId": "B4"
+          "productId": "pb2"
         }
       ],
       "sizes": [
@@ -327,7 +327,7 @@
       ]
     },
     {
-      "id": "B4",
+      "id": "pb2",
       "category": "party-bags",
       "collection": "Party Bag Collection",
       "name": "Pearl White Party Bag",
@@ -346,12 +346,12 @@
         {
           "name": "Champagne",
           "swatch": "#D4AF37",
-          "productId": "B3"
+          "productId": "pb1"
         },
         {
           "name": "Pearl White",
           "swatch": "#F5F0E8",
-          "productId": "B4"
+          "productId": "pb2"
         }
       ],
       "sizes": [
@@ -385,7 +385,7 @@
       ]
     },
     {
-      "id": "B7",
+      "id": "sb1",
       "category": "side-bags",
       "collection": "Side Bag Collection",
       "name": "Chic Urban Side Sling",
@@ -404,12 +404,12 @@
         {
           "name": "Warm Tan",
           "swatch": "#C4A882",
-          "productId": "B7"
+          "productId": "sb1"
         },
         {
           "name": "Soft Blush",
           "swatch": "#E8C4B8",
-          "productId": "B8"
+          "productId": "sb2"
         }
       ],
       "sizes": [
@@ -433,7 +433,7 @@
       ]
     },
     {
-      "id": "B8",
+      "id": "sb2",
       "category": "side-bags",
       "collection": "Side Bag Collection",
       "name": "Blush Side Crossbody",
@@ -452,12 +452,12 @@
         {
           "name": "Warm Tan",
           "swatch": "#C4A882",
-          "productId": "B7"
+          "productId": "sb1"
         },
         {
           "name": "Soft Blush",
           "swatch": "#E8C4B8",
-          "productId": "B8"
+          "productId": "sb2"
         }
       ],
       "sizes": [

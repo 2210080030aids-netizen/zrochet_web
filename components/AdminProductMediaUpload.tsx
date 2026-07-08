@@ -23,7 +23,7 @@ export default function AdminProductMediaUpload({
     if (!selected?.length) return;
 
     if (!productId.trim()) {
-      setError("Enter a Product ID first (e.g. B10).");
+      setError("Select a collection first to get the product ID.");
       return;
     }
 

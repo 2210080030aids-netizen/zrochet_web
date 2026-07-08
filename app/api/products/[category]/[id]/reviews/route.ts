@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveStoredProductId } from "@/lib/product-id";
 import {
   createProductReview,
   getProductReviewStats,
@@ -13,7 +14,10 @@ interface RouteParams {
 export async function GET(_request: Request, { params }: RouteParams) {
   try {
     const { category, id } = await params;
-    const productId = id.toUpperCase();
+    const productId = await resolveStoredProductId(category, id);
+    if (!productId) {
+      return NextResponse.json({ reviews: [] });
+    }
     const reviews = await listProductReviews(category, productId);
     return NextResponse.json({ reviews });
   } catch (error) {
@@ -25,13 +29,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
 export async function POST(request: Request, { params }: RouteParams) {
   try {
     const { category, id } = await params;
-    const productId = id.toUpperCase();
-
-    const product = await prisma.product.findUnique({
-      where: { categorySlug_productId: { categorySlug: category, productId } },
-    });
-
-    if (!product) {
+    const productId = await resolveStoredProductId(category, id);
+    if (!productId) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 

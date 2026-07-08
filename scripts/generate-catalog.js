@@ -49,6 +49,14 @@ const CATEGORIES = [
   },
 ];
 
+const CATEGORY_ID_PREFIX = {
+  "mini-bags": "mb",
+  "party-bags": "pb",
+  "oreo-bags": "ob",
+  "side-bags": "sb",
+  "handle-bags": "hb",
+};
+
 const PRODUCT_FILE = /^(B\d+)_(minibag|partybag|oreo|side|handle)(?:\s*\((\d+)\))?(?:\.png)?\.(jpe?g|png|webp)$/i;
 const VIDEO_FILE = /^(B\d+)_.*video\.mp4$/i;
 
@@ -169,6 +177,39 @@ function buildMedia(group, overrides) {
   return media;
 }
 
+function parseLegacySuffix(id) {
+  const match = String(id).match(/^B(\d+)$/i);
+  return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+}
+
+function assignPrefixedIds(products) {
+  const byCategory = new Map();
+  for (const product of products) {
+    if (!byCategory.has(product.category)) byCategory.set(product.category, []);
+    byCategory.get(product.category).push(product);
+  }
+
+  const idMap = new Map();
+  for (const [category, items] of byCategory) {
+    const prefix = CATEGORY_ID_PREFIX[category];
+    if (!prefix) continue;
+    items.sort((a, b) => parseLegacySuffix(a.id) - parseLegacySuffix(b.id));
+    items.forEach((product, index) => {
+      idMap.set(`${category}:${product.id}`, `${prefix}${index + 1}`);
+    });
+  }
+
+  return products.map((product) => {
+    const newId = idMap.get(`${product.category}:${product.id}`) || product.id;
+    const colorVariants = (product.colorVariants || []).map((variant) => ({
+      ...variant,
+      productId:
+        idMap.get(`${product.category}:${variant.productId}`) || variant.productId,
+    }));
+    return { ...product, id: newId, colorVariants };
+  });
+}
+
 function buildCatalog() {
   const config = loadConfig();
   const groups = scanProducts();
@@ -208,10 +249,12 @@ function buildCatalog() {
     return a.id.localeCompare(b.id);
   });
 
+  const prefixed = assignPrefixedIds(products);
+
   return {
     generatedAt: new Date().toISOString(),
     categories: CATEGORIES.map(({ slug, name, label }) => ({ slug, name, label })),
-    products,
+    products: prefixed,
   };
 }
 

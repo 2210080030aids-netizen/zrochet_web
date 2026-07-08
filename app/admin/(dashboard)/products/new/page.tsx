@@ -50,6 +50,7 @@ export default function NewProductPage() {
       .then((data) => {
         const siblings = data.products ?? [];
         setSiblingProducts(siblings);
+        setProductId(data.nextProductId ?? "");
         if (siblings.length > 0) {
           setLinkToProductId(siblings[0].productId);
         } else {
@@ -77,7 +78,6 @@ export default function NewProductPage() {
 
     const form = new FormData(e.currentTarget);
     const body = {
-      productId: String(form.get("productId")),
       categorySlug: String(form.get("categorySlug")),
       name: String(form.get("name")),
       price: Number(form.get("price")),
@@ -116,14 +116,16 @@ export default function NewProductPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6">
         <label className="block text-sm font-medium text-brown-dark">
-          Product ID (e.g. B10)
+          Product ID (auto-assigned)
           <input
             name="productId"
-            required
+            readOnly
             value={productId}
-            onChange={(e) => setProductId(e.target.value.toUpperCase())}
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+            className="mt-2 w-full rounded-xl border border-sand bg-sand/40 px-4 py-3 text-sm text-text-muted"
           />
+          <span className="mt-2 block text-xs text-text-muted">
+            The next ID is assigned automatically when you save (e.g. mb1, mb2 for Mini Bags).
+          </span>
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Collection

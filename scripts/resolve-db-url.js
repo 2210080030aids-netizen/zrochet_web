@@ -24,7 +24,9 @@ function loadEnvFiles() {
 
 function getDatabaseUrl() {
   loadEnvFiles();
-  const url = (process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL || "").trim();
+  const url = isRailwayRuntime()
+    ? (process.env.DATABASE_URL || "").trim()
+    : (process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL || "").trim();
   if (!url) return undefined;
   if (url.includes("PASSWORD@HOST") || url.includes("@HOST:")) return undefined;
   if (url.includes("postgres.railway.internal") && !isRailwayRuntime()) return undefined;

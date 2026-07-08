@@ -4,6 +4,7 @@ import {
   removeProductFromColorGroups,
   syncProductColorVariants,
 } from "@/lib/color-variants";
+import { renumberProductsAfterDelete, resolveStoredProductId } from "@/lib/product-id";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
@@ -16,9 +17,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   const { category, id } = await params;
+  const productId = await resolveStoredProductId(category, id);
+  if (!productId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const product = await prisma.product.findUnique({
     where: {
-      categorySlug_productId: { categorySlug: category, productId: id.toUpperCase() },
+      categorySlug_productId: { categorySlug: category, productId },
     },
   });
 
@@ -35,6 +40,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 
   const { category, id } = await params;
+  const productId = await resolveStoredProductId(category, id);
+  if (!productId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const body = await request.json();
 
   if (!body.colorName?.trim()) {
@@ -43,7 +52,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   const product = await prisma.product.update({
     where: {
-      categorySlug_productId: { categorySlug: category, productId: id.toUpperCase() },
+      categorySlug_productId: { categorySlug: category, productId },
     },
     data: {
       name: body.name,
@@ -70,7 +79,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   const updated = await prisma.product.findUnique({
     where: {
-      categorySlug_productId: { categorySlug: category, productId: id.toUpperCase() },
+      categorySlug_productId: { categorySlug: category, productId },
     },
   });
 
@@ -83,12 +92,17 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
   }
 
   const { category, id } = await params;
-  await removeProductFromColorGroups(category, id);
+  const productId = await resolveStoredProductId(category, id);
+  if (!productId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  await removeProductFromColorGroups(category, productId);
   await prisma.product.delete({
     where: {
-      categorySlug_productId: { categorySlug: category, productId: id.toUpperCase() },
+      categorySlug_productId: { categorySlug: category, productId },
     },
   });
+  await renumberProductsAfterDelete(category);
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { normalizeProductId } from "@/lib/product-id";
 import type { ColorVariant } from "@/lib/types";
+
+export { normalizeProductId };
 
 function toJsonValue(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -16,10 +19,6 @@ function parseColorVariants(value: unknown): ColorVariant[] {
       "swatch" in item &&
       "productId" in item
   );
-}
-
-export function normalizeProductId(productId: string): string {
-  return productId.trim().toUpperCase();
 }
 
 export function buildColorVariant(

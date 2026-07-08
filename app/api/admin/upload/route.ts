@@ -48,10 +48,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "File must be under 20 MB" }, { status: 400 });
   }
 
-  const productId = String(formData.get("productId") || "PRODUCT")
+  const productId = String(formData.get("productId") || "product")
     .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "");
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
   const index = Math.max(1, Number(formData.get("index") || 1));
   const label = String(formData.get("label") || `View ${index}`).trim() || `View ${index}`;
   const ext = extForMime(file.type);

@@ -1,3 +1,5 @@
+import { normalizeProductId } from "./product-id";
+
 export interface SampleReview {
   id: string;
   author: string;
@@ -39,7 +41,7 @@ const DEFAULT_REVIEWS: SampleReview[] = [
 ];
 
 const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
-  B9: [
+  hb1: [
     {
       id: "b9-1",
       author: "Meera S.",
@@ -68,7 +70,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B1: [
+  mb1: [
     {
       id: "b1-1",
       author: "Priya M.",
@@ -97,7 +99,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B2: [
+  mb2: [
     {
       id: "b2-1",
       author: "Ananya R.",
@@ -126,7 +128,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B5: [
+  ob1: [
     {
       id: "b5-1",
       author: "Aisha M.",
@@ -155,7 +157,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B6: [
+  ob2: [
     {
       id: "b6-1",
       author: "Lakshmi R.",
@@ -184,7 +186,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B3: [
+  pb1: [
     {
       id: "b3-1",
       author: "Neha W.",
@@ -213,7 +215,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B4: [
+  pb2: [
     {
       id: "b4-1",
       author: "Sana F.",
@@ -242,7 +244,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B7: [
+  sb1: [
     {
       id: "b7-1",
       author: "Arjun P.",
@@ -271,7 +273,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       verified: true,
     },
   ],
-  B8: [
+  sb2: [
     {
       id: "b8-1",
       author: "Diya S.",
@@ -325,7 +327,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
 };
 
 export function getSampleReviewsForProduct(productId: string): SampleReview[] {
-  const key = productId.toUpperCase();
+  const key = normalizeProductId(productId);
   return PRODUCT_SAMPLE_REVIEWS[key] ?? DEFAULT_REVIEWS;
 }
 

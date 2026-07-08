@@ -9,6 +9,7 @@ import {
   type SiteSettingsData,
 } from "./catalog-db";
 import { isDatabaseConfigured } from "./prisma";
+import { normalizeProductId } from "./product-id";
 import type { Catalog, Product, Category, ProductMedia } from "./types";
 
 export type { SiteSettingsData };
@@ -41,7 +42,7 @@ const baseProducts = baseCatalog.products.map(normalizeProduct);
 const missingTestProducts = TEST_BAG_PRODUCTS.filter(
   (test) =>
     !baseProducts.some(
-      (p) => p.category === test.category && p.id.toUpperCase() === test.id.toUpperCase()
+      (p) => p.category === test.category && normalizeProductId(p.id) === normalizeProductId(test.id)
     )
 );
 
@@ -54,16 +55,25 @@ function mergeTestProducts(catalog: Catalog): Catalog {
   const missing = TEST_BAG_PRODUCTS.filter(
     (test) =>
       !catalog.products.some(
-        (p) => p.category === test.category && p.id.toUpperCase() === test.id.toUpperCase()
+        (p) => p.category === test.category && normalizeProductId(p.id) === normalizeProductId(test.id)
       )
   );
   if (!missing.length) return catalog;
   return { ...catalog, products: [...catalog.products, ...missing] };
 }
 
+async function withDbFallback<T>(label: string, query: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await query();
+  } catch (error) {
+    console.error(`Database unavailable during ${label}, using fallback:`, error);
+    return fallback;
+  }
+}
+
 async function resolveCatalog(): Promise<Catalog> {
   if (isDatabaseConfigured()) {
-    const dbCatalog = await fetchCatalogFromDb();
+    const dbCatalog = await withDbFallback("catalog load", fetchCatalogFromDb, null);
     if (dbCatalog) return mergeTestProducts(dbCatalog);
   }
   return jsonCatalog;
@@ -80,7 +90,11 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getCategory(slug: string): Promise<Category | undefined> {
   if (isDatabaseConfigured()) {
-    const cat = await fetchCategoryFromDb(slug);
+    const cat = await withDbFallback(
+      `category ${slug}`,
+      () => fetchCategoryFromDb(slug),
+      undefined
+    );
     if (cat) return cat;
   }
   return jsonCatalog.categories.find((c) => c.slug === slug);
@@ -88,7 +102,11 @@ export async function getCategory(slug: string): Promise<Category | undefined> {
 
 export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
   if (isDatabaseConfigured()) {
-    const products = await fetchProductsByCategoryFromDb(categorySlug);
+    const products = await withDbFallback(
+      `products in ${categorySlug}`,
+      () => fetchProductsByCategoryFromDb(categorySlug),
+      []
+    );
     if (products.length) return products;
   }
   return jsonCatalog.products.filter((p) => p.category === categorySlug);
@@ -99,17 +117,31 @@ export async function getProduct(
   id: string
 ): Promise<Product | undefined> {
   if (isDatabaseConfigured()) {
-    const product = await fetchProductFromDb(categorySlug, id);
+    const product = await withDbFallback(
+      `product ${categorySlug}/${id}`,
+      () => fetchProductFromDb(categorySlug, id),
+      undefined
+    );
     if (product) return product;
   }
   return jsonCatalog.products.find(
-    (p) => p.category === categorySlug && p.id.toUpperCase() === id.toUpperCase()
+    (p) => p.category === categorySlug && normalizeProductId(p.id) === normalizeProductId(id)
   );
 }
 
 export async function getSiteSettings(): Promise<SiteSettingsData> {
   if (isDatabaseConfigured()) {
-    return fetchSiteSettings();
+    return withDbFallback("site settings", fetchSiteSettings, {
+      email: "hello@zrochet.com",
+      phone: "+91 98765 43210",
+      address: "123 Artisan Lane, India",
+      footerText:
+        "Handcrafted crochet creations made with love, patience, and a touch of magic.",
+      heroImage: "/images/welcome.png",
+      upiId: process.env.NEXT_PUBLIC_UPI_ID?.trim() || "sarathbhushan04@oksbi",
+      upiPayeeName: process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || "Zrochet",
+      instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
+    });
   }
   return {
     email: "hello@zrochet.com",
