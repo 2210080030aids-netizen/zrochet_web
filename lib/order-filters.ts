@@ -1,9 +1,13 @@
 import type { Prisma } from "@prisma/client";
 import { ORDER_STATUS, type OrderStatus } from "@/lib/order-status";
 
+/** Orders that are visible in admin — payment screenshot must be uploaded. */
+export const PLACED_ORDER_WHERE: Prisma.OrderWhereInput = {
+  paymentProofUrl: { not: null },
+};
+
 export const ORDER_STATUS_FILTER_OPTIONS = [
   { value: "", label: "All statuses" },
-  { value: ORDER_STATUS.PENDING, label: "Pending" },
   { value: ORDER_STATUS.PAYMENT_SUBMITTED, label: "Payment submitted" },
   { value: ORDER_STATUS.APPROVED, label: "Approved" },
   { value: ORDER_STATUS.REJECTED, label: "Rejected" },
@@ -14,7 +18,11 @@ export interface OrderFilters {
   q: string;
 }
 
-const VALID_STATUSES = new Set<string>(Object.values(ORDER_STATUS));
+const VALID_STATUSES = new Set<string>([
+  ORDER_STATUS.PAYMENT_SUBMITTED,
+  ORDER_STATUS.APPROVED,
+  ORDER_STATUS.REJECTED,
+]);
 
 export function parseOrderFilters(params: {
   status?: string;
@@ -30,7 +38,9 @@ export function parseOrderFilters(params: {
 }
 
 export function buildOrderWhereClause(filters: OrderFilters): Prisma.OrderWhereInput {
-  const where: Prisma.OrderWhereInput = {};
+  const where: Prisma.OrderWhereInput = {
+    ...PLACED_ORDER_WHERE,
+  };
 
   if (filters.status) {
     where.status = filters.status;

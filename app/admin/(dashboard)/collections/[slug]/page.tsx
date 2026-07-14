@@ -7,10 +7,6 @@ import { useEffect, useState } from "react";
 interface Collection {
   slug: string;
   name: string;
-  label: string;
-  pattern: string | null;
-  defaultPrice: number;
-  sortOrder: number;
   _count?: { products: number };
 }
 
@@ -38,10 +34,6 @@ export default function EditCollectionPage() {
     const form = new FormData(e.currentTarget);
     const body = {
       name: String(form.get("name")),
-      label: String(form.get("label")),
-      pattern: String(form.get("pattern") || ""),
-      defaultPrice: Number(form.get("defaultPrice")),
-      sortOrder: Number(form.get("sortOrder")),
     };
 
     const res = await fetch(`/api/admin/collections/${collection.slug}`, {
@@ -110,7 +102,6 @@ export default function EditCollectionPage() {
         ← Back to collections
       </Link>
       <h1 className="font-display mt-4 text-3xl font-semibold text-brown-dark">Edit Collection</h1>
-      <p className="mt-2 font-mono text-sm text-text-muted">{collection.slug}</p>
       {(collection._count?.products ?? 0) > 0 && (
         <p className="mt-2 text-sm text-amber-800">
           This collection has {collection._count?.products} product(s). Deleting it will remove those
@@ -118,26 +109,18 @@ export default function EditCollectionPage() {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6"
+      >
         <label className="block text-sm font-medium text-brown-dark">
-          Display Name
-          <input name="name" required defaultValue={collection.name} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Label
-          <input name="label" required defaultValue={collection.label} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Image pattern
-          <input name="pattern" defaultValue={collection.pattern ?? ""} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Default Price (INR)
-          <input name="defaultPrice" type="number" min="1" required defaultValue={collection.defaultPrice} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Sort Order
-          <input name="sortOrder" type="number" defaultValue={collection.sortOrder} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+          Name
+          <input
+            name="name"
+            required
+            defaultValue={collection.name}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex flex-wrap gap-3">

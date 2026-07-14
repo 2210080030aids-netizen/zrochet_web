@@ -49,15 +49,10 @@ export default function CheckoutPageContent() {
         <p className="mt-3 text-text-muted">Your cart is empty.</p>
 
         <Link
-
-          href="/mini-bags/TEST"
-
+          href="/#shop"
           className="mt-8 inline-flex rounded-full bg-brown-dark px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
-
         >
-
-          Try Test Bag (₹1)
-
+          Continue Shopping
         </Link>
 
       </div>
@@ -130,7 +125,8 @@ export default function CheckoutPageContent() {
 
       <p className="mt-2 text-text-muted">
 
-        Complete your details and pay via GPay / UPI to confirm your order.
+        Complete your details and pay via GPay / UPI. Your order is placed after you upload the
+        payment screenshot.
 
       </p>
 

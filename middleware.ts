@@ -23,26 +23,57 @@ async function getExpectedToken(): Promise<string> {
     .join("");
 }
 
+function clearAdminCookie(response: NextResponse) {
+  response.cookies.set(ADMIN_COOKIE, "", {
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+    sameSite: "lax",
+  });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isAdminUi = pathname.startsWith("/admin");
+  const isAdminApi = pathname.startsWith("/api/admin");
+
+  // Visiting the storefront UI ends the admin session.
+  // Do not clear on public API calls (media, products, etc.).
+  if (!isAdminUi && !isAdminApi) {
+    if (pathname.startsWith("/api/") || pathname.startsWith("/_next/")) {
+      return NextResponse.next();
+    }
+    const response = NextResponse.next();
+    if (request.cookies.get(ADMIN_COOKIE)) {
+      clearAdminCookie(response);
+    }
+    return response;
+  }
+
+  if (!isAdminUi) {
+    return NextResponse.next();
+  }
+
+  // Always allow the login page itself (no auto bounce — avoids logout/login loops).
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   const expected = await getExpectedToken();
   const token = request.cookies.get(ADMIN_COOKIE)?.value;
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    if (token !== expected) {
-      const loginUrl = new URL("/admin/login", request.url);
-      loginUrl.searchParams.set("from", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  if (pathname === "/admin/login" && token === expected) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  if (token !== expected) {
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("from", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

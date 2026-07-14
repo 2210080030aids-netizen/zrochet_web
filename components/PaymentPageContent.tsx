@@ -144,9 +144,10 @@ function PaymentContent() {
         throw new Error(data.error || "Failed to submit payment proof");
       }
 
+      const placedOrderId = String(data.orderId || data.order?.id || orderId);
       clearCart();
       router.push(
-        `/payment/success?orderId=${encodeURIComponent(orderId)}&amount=${amount.toFixed(2)}`
+        `/payment/success?orderId=${encodeURIComponent(placedOrderId)}&amount=${amount.toFixed(2)}`
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -168,13 +169,14 @@ function PaymentContent() {
             Upload payment proof
           </h1>
           <p className="mt-2 text-sm text-text-muted">
-            Upload a screenshot from GPay, PhonePe, or your UPI app so we can verify your payment.
+            Upload a screenshot from GPay, PhonePe, or your UPI app. Your Order ID (ODZ…) is created
+            only after this step — then it appears for admin verification.
           </p>
         </div>
 
         <div className="mt-8 rounded-2xl border border-sand bg-white p-6 luxury-shadow">
           <p className="text-sm text-text-muted">
-            Order <span className="font-medium text-brown-dark">{orderId}</span>
+            Checkout in progress — Order ID will be assigned after you submit proof
           </p>
           <p className="mt-1 font-display text-2xl font-semibold text-brown-dark">
             {formatCartPrice(amount, "INR")}
@@ -236,7 +238,7 @@ function PaymentContent() {
         <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">Step 1 of 2 · Pay with GPay / UPI</p>
         <h1 className="font-display mt-2 text-3xl font-semibold text-brown-dark">Scan to pay</h1>
         <p className="mt-2 text-sm text-text-muted">
-          Order <span className="font-medium text-brown-dark">{orderId}</span>
+          Complete payment, then upload your screenshot to place the order and get your Order ID
         </p>
       </div>
 
@@ -289,7 +291,7 @@ function PaymentContent() {
           I&apos;ve completed payment
         </button>
         <p className="text-center text-xs text-text-muted">
-          Next: upload your payment screenshot for verification.
+          Next: upload your payment screenshot to place the order.
         </p>
         <Link
           href="/checkout"

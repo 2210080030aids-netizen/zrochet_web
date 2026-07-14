@@ -22,11 +22,25 @@ export function normalizeProductId(productId: string): string {
 }
 
 export function getCategoryIdPrefix(categorySlug: string): string {
-  const prefix = CATEGORY_ID_PREFIX[categorySlug];
-  if (!prefix) {
-    throw new Error(`No product ID prefix configured for collection: ${categorySlug}`);
+  const known = CATEGORY_ID_PREFIX[categorySlug];
+  if (known) return known;
+
+  // Auto-prefix for new collections: "summer-bags" → "sb", "clutches" → "cl"
+  const parts = categorySlug
+    .toLowerCase()
+    .split("-")
+    .map((part) => part.replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`;
   }
-  return prefix;
+
+  const compact = parts[0] || categorySlug.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (compact.length >= 2) return compact.slice(0, 2);
+  if (compact.length === 1) return `${compact}x`;
+
+  throw new Error(`No product ID prefix configured for collection: ${categorySlug}`);
 }
 
 export function formatProductId(categorySlug: string, sequence: number): string {
@@ -295,7 +309,11 @@ export async function migrateLegacyProductIds(): Promise<void> {
   const collections = await prisma.collection.findMany({ select: { slug: true } });
 
   for (const { slug } of collections) {
-    if (!CATEGORY_ID_PREFIX[slug]) continue;
+    try {
+      getCategoryIdPrefix(slug);
+    } catch {
+      continue;
+    }
 
     const products = await prisma.product.findMany({
       where: { categorySlug: slug },

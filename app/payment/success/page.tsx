@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { formatCartPrice } from "@/lib/cart";
+import { orderInvoiceDownloadPath } from "@/lib/invoice";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -29,8 +30,9 @@ function SuccessContent() {
         Payment done successfully
       </h1>
       <p className="mt-4 leading-relaxed text-text-muted">
-        Thank you! Your payment proof has been submitted. We&apos;ll verify it and confirm your order
-        shortly. You&apos;ll receive an email with your product details once approved.
+        Thank you! Your payment screenshot has been received and your order is now placed. We&apos;ll
+        verify it and confirm shortly. You&apos;ll receive an email with your product details once
+        approved.
       </p>
 
       {(orderId || Number.isFinite(amount)) && (
@@ -50,10 +52,10 @@ function SuccessContent() {
           )}
           {orderId && (
             <a
-              href={`/api/orders/${encodeURIComponent(orderId)}/receipt`}
+              href={orderInvoiceDownloadPath(orderId)}
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brown transition hover:text-brown-dark"
             >
-              Download payment receipt (PDF) →
+              Download invoice (PDF) →
             </a>
           )}
         </div>

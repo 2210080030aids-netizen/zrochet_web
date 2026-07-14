@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getSampleReviewsForProduct } from "@/lib/sample-reviews";
 
 interface ProductReview {
@@ -12,10 +12,21 @@ interface ProductReview {
   createdAt: string;
 }
 
+interface DisplayReview {
+  key: string;
+  author: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  date: string;
+}
+
 interface ProductReviewsProps {
   categorySlug: string;
   productId: string;
 }
+
+const PAGE_SIZE = 3;
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -74,10 +85,29 @@ function formatReviewDate(value: string): string {
   });
 }
 
+function ReviewCard({ review }: { review: DisplayReview }) {
+  return (
+    <article className="flex h-full flex-col rounded-2xl border border-sand/60 bg-white p-5 transition hover:luxury-shadow">
+      <div className="flex items-center justify-between gap-4">
+        <StarRating rating={review.rating} />
+        <span className="text-xs font-medium text-brown">Customer</span>
+      </div>
+      {review.title && (
+        <h3 className="mt-3 font-medium text-brown-dark">{review.title}</h3>
+      )}
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">{review.body}</p>
+      <p className="mt-4 text-xs text-text-muted">
+        {review.author} · {review.date}
+      </p>
+    </article>
+  );
+}
+
 export default function ProductReviews({ categorySlug, productId }: ProductReviewsProps) {
   const sampleReviews = getSampleReviewsForProduct(productId);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -102,8 +132,40 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
   }
 
   useEffect(() => {
+    setPage(0);
     loadReviews();
   }, [categorySlug, productId]);
+
+  const allReviews = useMemo<DisplayReview[]>(() => {
+    const live = reviews.map((review) => ({
+      key: review.id,
+      author: review.authorName,
+      rating: review.rating,
+      title: review.title,
+      body: review.body,
+      date: formatReviewDate(review.createdAt),
+    }));
+
+    const samples = sampleReviews.map((review) => ({
+      key: `sample-${review.id}`,
+      author: review.author,
+      rating: review.rating,
+      title: review.title,
+      body: review.body,
+      date: review.date,
+    }));
+
+    return [...live, ...samples];
+  }, [reviews, sampleReviews]);
+
+  const totalPages = Math.max(1, Math.ceil(allReviews.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const visibleReviews = allReviews.slice(
+    currentPage * PAGE_SIZE,
+    currentPage * PAGE_SIZE + PAGE_SIZE
+  );
+  const canGoPrev = currentPage > 0;
+  const canGoNext = currentPage < totalPages - 1;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,6 +192,7 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
     }
 
     setReviews((current) => [data.review, ...current]);
+    setPage(0);
     setAuthorName("");
     setTitle("");
     setBody("");
@@ -146,45 +209,47 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
       <div className="mt-8">
         {loading ? (
           <p className="text-sm text-text-muted">Loading comments…</p>
+        ) : allReviews.length === 0 ? (
+          <p className="text-sm text-text-muted">No comments yet. Be the first to share.</p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {reviews.map((review) => (
-              <article
-                key={review.id}
-                className="flex h-full flex-col rounded-2xl border border-sand/60 bg-cream/40 p-5 transition hover:luxury-shadow"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <StarRating rating={review.rating} />
-                  <span className="text-xs font-medium text-brown">Customer</span>
-                </div>
-                {review.title && (
-                  <h3 className="mt-3 font-medium text-brown-dark">{review.title}</h3>
-                )}
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">{review.body}</p>
-                <p className="mt-4 text-xs text-text-muted">
-                  {review.authorName} · {formatReviewDate(review.createdAt)}
-                </p>
-              </article>
-            ))}
+          <div className="relative">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {visibleReviews.map((review) => (
+                <ReviewCard key={review.key} review={review} />
+              ))}
+            </div>
 
-            {sampleReviews.map((review) => (
-              <article
-                key={`sample-${review.id}`}
-                className="flex h-full flex-col rounded-2xl border border-sand/60 bg-white p-5 transition hover:luxury-shadow"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <StarRating rating={review.rating} />
-                  {review.verified && (
-                    <span className="text-xs font-medium text-emerald-700">Verified Purchase</span>
-                  )}
-                </div>
-                <h3 className="mt-3 font-medium text-brown-dark">{review.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">{review.body}</p>
-                <p className="mt-4 text-xs text-text-muted">
-                  {review.author} · {review.date}
-                </p>
-              </article>
-            ))}
+            {allReviews.length > PAGE_SIZE && (
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={!canGoPrev}
+                  aria-label="Previous comments"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-sand bg-white text-brown-dark transition hover:border-gold hover:bg-cream disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <span className="min-w-[5rem] text-center text-sm text-text-muted">
+                  {currentPage + 1} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={!canGoNext}
+                  aria-label="Next comments"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-sand bg-white text-brown-dark transition hover:border-gold hover:bg-cream disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

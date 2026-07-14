@@ -13,7 +13,8 @@ function createPrismaClient() {
 
 function getPrismaClient(): PrismaClient {
   const cached = globalForPrisma.prisma;
-  if (cached?.productReview) {
+  // Recreate after `prisma generate` if HMR left a stale client without new models.
+  if (cached && "productMediaFile" in cached && "productReview" in cached) {
     return cached;
   }
 
@@ -25,9 +26,9 @@ function getPrismaClient(): PrismaClient {
 }
 
 export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop, receiver) {
+  get(_target, prop) {
     const client = getPrismaClient();
-    const value = Reflect.get(client, prop, receiver);
+    const value = Reflect.get(client, prop, client);
     return typeof value === "function" ? value.bind(client) : value;
   },
 });

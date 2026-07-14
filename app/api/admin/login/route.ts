@@ -13,12 +13,12 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.json({ ok: true });
+  // Session cookie only — never persist login across browser restarts.
   response.cookies.set(ADMIN_COOKIE, createAdminSessionToken(), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
   });
 
   return response;

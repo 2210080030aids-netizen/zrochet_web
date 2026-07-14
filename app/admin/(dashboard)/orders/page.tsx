@@ -8,8 +8,10 @@ import {
   buildOrderWhereClause,
   hasActiveOrderFilters,
   parseOrderFilters,
+  PLACED_ORDER_WHERE,
 } from "@/lib/order-filters";
 import AdminOrdersFilters from "@/components/AdminOrdersFilters";
+import { orderInvoiceDownloadPath } from "@/lib/invoice";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +26,25 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   const isFiltered = hasActiveOrderFilters(filters);
 
   const [orders, totalCount, awaitingApproval] = await Promise.all([
-    prisma.order.findMany({ where, orderBy: { createdAt: "desc" } }),
-    prisma.order.count(),
-    prisma.order.count({ where: { status: ORDER_STATUS.PAYMENT_SUBMITTED } }),
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        subtotal: true,
+        currency: true,
+        status: true,
+        paymentProofUrl: true,
+        createdAt: true,
+      },
+    }),
+    prisma.order.count({ where: PLACED_ORDER_WHERE }),
+    prisma.order.count({
+      where: { ...PLACED_ORDER_WHERE, status: ORDER_STATUS.PAYMENT_SUBMITTED },
+    }),
   ]);
 
   return (
@@ -100,10 +118,10 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-4 py-3">
                     <a
-                      href={`/api/orders/${order.id}/receipt`}
+                      href={orderInvoiceDownloadPath(order.id)}
                       className="inline-flex rounded-full bg-brown-dark px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
                     >
-                      Receipt PDF
+                      Invoice PDF
                     </a>
                   </td>
                   <td className="px-4 py-3 text-right">

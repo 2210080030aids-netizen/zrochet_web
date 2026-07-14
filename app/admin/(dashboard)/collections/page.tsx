@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatCartPrice } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
 
@@ -26,37 +25,35 @@ export default async function AdminCollectionsPage() {
       </div>
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-sand bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-sand bg-beige/50 text-text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Slug</th>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Label</th>
-              <th className="px-4 py-3 font-medium">Default Price</th>
-              <th className="px-4 py-3 font-medium">Products</th>
-              <th className="px-4 py-3 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-sand">
-            {collections.map((collection) => (
-              <tr key={collection.slug}>
-                <td className="px-4 py-3 font-mono text-xs text-brown-dark">{collection.slug}</td>
-                <td className="px-4 py-3 font-medium">{collection.name}</td>
-                <td className="px-4 py-3 text-text-muted">{collection.label}</td>
-                <td className="px-4 py-3">{formatCartPrice(collection.defaultPrice, "INR")}</td>
-                <td className="px-4 py-3">{collection._count.products}</td>
-                <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/admin/collections/${collection.slug}`}
-                    className="font-medium text-brown transition hover:text-brown-dark"
-                  >
-                    Edit
-                  </Link>
-                </td>
+        {collections.length === 0 ? (
+          <p className="p-8 text-sm text-text-muted">No collections yet.</p>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-sand bg-beige/50 text-text-muted">
+              <tr>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Products</th>
+                <th className="px-4 py-3 font-medium"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-sand">
+              {collections.map((collection) => (
+                <tr key={collection.slug}>
+                  <td className="px-4 py-3 font-medium text-brown-dark">{collection.name}</td>
+                  <td className="px-4 py-3">{collection._count.products}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/collections/${collection.slug}`}
+                      className="font-medium text-brown transition hover:text-brown-dark"
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

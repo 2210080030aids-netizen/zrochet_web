@@ -6,6 +6,7 @@ import { sendThankYouEmail, sendRejectionEmail, sendShippedEmail, sendDeliveredE
 import { generateReceiptPdf } from "@/lib/receipt-pdf";
 import { buildTrackingUpdateData, type FulfillmentStage } from "@/lib/order-tracking";
 import { deductStockForOrder } from "@/lib/product-stock";
+import { fetchSiteSettings } from "@/lib/catalog-db";
 import type { CartItem } from "@/lib/cart";
 
 interface RouteParams {
@@ -28,7 +29,16 @@ async function sendOrderThankYouEmail(order: {
   createdAt: Date;
 }) {
   const items = order.items as unknown as CartItem[];
-  const receiptPdf = generateReceiptPdf({ ...order, items });
+  const settings = await fetchSiteSettings();
+  const receiptPdf = generateReceiptPdf(
+    { ...order, items },
+    {
+      name: "Zrochet",
+      email: settings.email,
+      phone: settings.phone,
+      address: settings.address,
+    }
+  );
 
   const emailResult = await sendThankYouEmail({
     to: order.email,
@@ -90,7 +100,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   const { id } = await params;
   const order = await prisma.order.findUnique({ where: { id } });
-  if (!order) {
+  if (!order || !order.paymentProofUrl) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
@@ -109,7 +119,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const action = body.action as "approve" | "reject" | "resend_email" | "update_tracking";
 
   const order = await prisma.order.findUnique({ where: { id } });
-  if (!order) {
+  if (!order || !order.paymentProofUrl) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 

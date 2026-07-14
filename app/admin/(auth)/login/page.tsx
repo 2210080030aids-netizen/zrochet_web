@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
+import { ADMIN_SESSION_FLAG } from "@/components/AdminSessionGuard";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,9 +27,16 @@ function LoginForm() {
       return;
     }
 
+    try {
+      sessionStorage.setItem(ADMIN_SESSION_FLAG, "1");
+    } catch {
+      // ignore
+    }
+
     const from = searchParams.get("from") || "/admin";
-    router.push(from);
-    router.refresh();
+    const target = from.startsWith("/admin") && from !== "/admin/login" ? from : "/admin";
+    // Full navigation so the session flag is committed before the admin guard runs.
+    window.location.assign(target);
   }
 
   return (

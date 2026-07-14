@@ -16,6 +16,7 @@ if (dbUrl) {
   process.env.DATABASE_URL = dbUrl;
   run("npx prisma migrate deploy");
   run("npm run db:migrate-product-ids");
+  run("npm run db:migrate-order-ids");
   run("npm run db:seed");
 } else {
   console.log("DATABASE_URL not configured — skipping migrate and seed.");

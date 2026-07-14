@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
 import { ORDER_STATUS } from "@/lib/order-status";
+import { PLACED_ORDER_WHERE } from "@/lib/order-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +10,24 @@ export default async function AdminDashboardPage() {
   try {
     const [productCount, orderCount, pendingPayments, recentOrders] = await Promise.all([
       prisma.product.count(),
-      prisma.order.count(),
+      prisma.order.count({ where: PLACED_ORDER_WHERE }),
       prisma.order.count({
-        where: { status: ORDER_STATUS.PAYMENT_SUBMITTED },
+        where: { ...PLACED_ORDER_WHERE, status: ORDER_STATUS.PAYMENT_SUBMITTED },
       }),
-      prisma.order.findMany({ take: 5, orderBy: { createdAt: "desc" } }),
+      prisma.order.findMany({
+        where: PLACED_ORDER_WHERE,
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          subtotal: true,
+          currency: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
     ]);
 
   return (

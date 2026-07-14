@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { labelFromCollectionName, slugifyCollectionName } from "@/lib/collection";
 import { prisma } from "@/lib/prisma";
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -29,10 +22,14 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const slug = body.slug ? slugify(body.slug) : slugify(body.name);
+  const name = String(body.name || "").trim();
+  if (!name) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
 
-  if (!slug || !body.name || !body.label) {
-    return NextResponse.json({ error: "Name and label are required" }, { status: 400 });
+  const slug = slugifyCollectionName(name);
+  if (!slug) {
+    return NextResponse.json({ error: "Enter a valid collection name" }, { status: 400 });
   }
 
   try {
@@ -40,15 +37,18 @@ export async function POST(request: Request) {
     const collection = await prisma.collection.create({
       data: {
         slug,
-        name: body.name,
-        label: body.label,
-        pattern: body.pattern || null,
-        defaultPrice: body.defaultPrice ?? 500,
-        sortOrder: body.sortOrder ?? (maxSort._max.sortOrder ?? 0) + 1,
+        name,
+        label: labelFromCollectionName(name),
+        pattern: null,
+        defaultPrice: 500,
+        sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
       },
     });
     return NextResponse.json({ collection }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Collection already exists or invalid data" }, { status: 400 });
+    return NextResponse.json(
+      { error: "A collection with this name already exists" },
+      { status: 400 }
+    );
   }
 }

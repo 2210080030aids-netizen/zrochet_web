@@ -202,7 +202,7 @@ export default function AdminOrderActions({
         </div>
         {message && <p className="text-sm text-brown-dark">{message}</p>}
         <p className="text-xs text-text-muted">
-          Approving sends a thank-you email with product details and PDF receipt. Rejecting sends a
+          Approving sends a thank-you email with product details and the new invoice PDF. Rejecting sends a
           notification email asking the customer to resubmit payment proof. On Railway use SendGrid (
           <code className="rounded bg-cream px-1">SENDGRID_API_KEY</code>); Gmail SMTP works on
           localhost only.

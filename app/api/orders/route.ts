@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { CartItem } from "@/lib/cart";
+import { createDraftOrderId } from "@/lib/order-id";
 import { validateOrderStock } from "@/lib/product-stock";
 
 export async function POST(request: Request) {
@@ -18,8 +19,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: stockCheck.message }, { status: 400 });
     }
 
+    // Draft checkout only — ODZ order number is assigned when payment proof is uploaded.
     const order = await prisma.order.create({
       data: {
+        id: createDraftOrderId(),
         name: body.name,
         email: body.email,
         phone: body.phone,

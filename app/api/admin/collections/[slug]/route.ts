@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { labelFromCollectionName } from "@/lib/collection";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
@@ -31,16 +32,19 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   const { slug } = await params;
   const body = await request.json();
+  const name = String(body.name || "").trim();
+
+  if (!name) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
 
   try {
+    // Keep slug stable so product URLs and IDs stay valid; only update display fields.
     const collection = await prisma.collection.update({
       where: { slug },
       data: {
-        name: body.name,
-        label: body.label,
-        pattern: body.pattern ?? null,
-        defaultPrice: body.defaultPrice,
-        sortOrder: body.sortOrder,
+        name,
+        label: labelFromCollectionName(name),
       },
     });
     return NextResponse.json({ collection });

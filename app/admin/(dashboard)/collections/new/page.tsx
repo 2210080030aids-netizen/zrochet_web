@@ -16,12 +16,7 @@ export default function NewCollectionPage() {
 
     const form = new FormData(e.currentTarget);
     const body = {
-      slug: String(form.get("slug")),
       name: String(form.get("name")),
-      label: String(form.get("label")),
-      pattern: String(form.get("pattern") || ""),
-      defaultPrice: Number(form.get("defaultPrice")),
-      sortOrder: Number(form.get("sortOrder") || 0),
     };
 
     const res = await fetch("/api/admin/collections", {
@@ -47,31 +42,22 @@ export default function NewCollectionPage() {
         ← Back to collections
       </Link>
       <h1 className="font-display mt-4 text-3xl font-semibold text-brown-dark">Add Collection</h1>
+      <p className="mt-2 text-sm text-text-muted">
+        Enter a name only. The store URL and product IDs are created automatically.
+      </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 max-w-2xl space-y-5 rounded-2xl border border-sand bg-white p-6"
+      >
         <label className="block text-sm font-medium text-brown-dark">
-          Slug (URL, e.g. mini-bags)
-          <input name="slug" required placeholder="mini-bags" className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Display Name
-          <input name="name" required placeholder="Mini Bag" className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Label (short tag)
-          <input name="label" required placeholder="Mini Bag Collection" className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Image pattern (optional, e.g. minibag)
-          <input name="pattern" placeholder="minibag" className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Default Price (INR)
-          <input name="defaultPrice" type="number" min="1" defaultValue={500} required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
-        </label>
-        <label className="block text-sm font-medium text-brown-dark">
-          Sort Order
-          <input name="sortOrder" type="number" defaultValue={0} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+          Name
+          <input
+            name="name"
+            required
+            placeholder="e.g. Mini Bags"
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+          />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button

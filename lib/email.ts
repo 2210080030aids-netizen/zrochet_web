@@ -102,7 +102,7 @@ function buildThankYouHtml(options: ThankYouEmailOptions): string {
       <p><strong>Delivery address:</strong><br/>${options.address.replace(/\n/g, "<br/>")}</p>
       <p><strong>Phone:</strong> ${options.phone}</p>
 
-      <p style="margin-top: 20px;">We've attached your payment receipt PDF. We'll reach out soon with delivery updates.</p>
+      <p style="margin-top: 20px;">We've attached your invoice PDF. We'll reach out soon with delivery updates.</p>
       <p>With warmth,<br/>The Zrochet Team</p>
       <p style="font-size: 12px; color: #8B7355;"><a href="${siteUrl}">${siteUrl}</a></p>
     </div>
@@ -142,11 +142,11 @@ function buildRejectionHtml(options: RejectionEmailOptions): string {
 }
 
 function getThankYouSubject(orderId: string): string {
-  return `Thank you for shopping — Zrochet order ${orderId.slice(0, 8)}`;
+  return `Thank you for shopping — Zrochet order ${orderId}`;
 }
 
 function getRejectionSubject(orderId: string): string {
-  return `Action needed — payment verification for Zrochet order ${orderId.slice(0, 8)}`;
+  return `Action needed — payment verification for Zrochet order ${orderId}`;
 }
 
 interface OrderUpdateEmailOptions {
@@ -220,15 +220,15 @@ async function sendOrderUpdateEmail(
 }
 
 function getPaymentReceivedSubject(orderId: string): string {
-  return `Payment received — Zrochet order ${orderId.slice(0, 8)}`;
+  return `Payment received — Zrochet order ${orderId}`;
 }
 
 function getShippedSubject(orderId: string): string {
-  return `Your order has shipped — Zrochet order ${orderId.slice(0, 8)}`;
+  return `Your order has shipped — Zrochet order ${orderId}`;
 }
 
 function getDeliveredSubject(orderId: string): string {
-  return `Your order has been delivered — Zrochet order ${orderId.slice(0, 8)}`;
+  return `Your order has been delivered — Zrochet order ${orderId}`;
 }
 
 function getFromRaw(): string {
@@ -244,7 +244,7 @@ function getFromRaw(): string {
 function getReceiptAttachment(orderId: string, receiptPdf?: Buffer) {
   if (!receiptPdf) return undefined;
   return {
-    filename: `zrochet-receipt-${orderId}.pdf`,
+    filename: `zrochet-invoice-${orderId}.pdf`,
     content: receiptPdf,
     contentType: "application/pdf" as const,
   };

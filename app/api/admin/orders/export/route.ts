@@ -16,7 +16,28 @@ export async function GET(request: NextRequest) {
   });
   const where = buildOrderWhereClause(filters);
 
-  const orders = await prisma.order.findMany({ where, orderBy: { createdAt: "desc" } });
+  const orders = await prisma.order.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      address: true,
+      items: true,
+      subtotal: true,
+      currency: true,
+      status: true,
+      paymentMethod: true,
+      paymentProofUrl: true,
+      paidAt: true,
+      approvedAt: true,
+      createdAt: true,
+      rejectionReason: true,
+      rejectedAt: true,
+    },
+  });
   const csv = buildOrdersCsv(orders);
   const date = new Date().toISOString().slice(0, 10);
   const suffix = filters.status ? `-${filters.status}` : "";

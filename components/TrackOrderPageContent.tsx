@@ -77,7 +77,7 @@ export default function TrackOrderPageContent() {
               required
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
-              placeholder="Paste your order ID"
+              placeholder="e.g. ODZ0999"
               className="mt-1 w-full rounded-xl border border-sand bg-cream/30 px-4 py-3 text-sm text-brown-dark placeholder:text-text-muted focus:border-brown focus:outline-none"
             />
           </div>

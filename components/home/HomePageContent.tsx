@@ -203,7 +203,6 @@ export default async function HomePageContent() {
                 </p>
                 <footer className="mt-4">
                   <strong className="text-sm text-brown-dark">{item.name}</strong>
-                  <span className="mt-1 block text-xs text-text-muted">Verified Buyer</span>
                 </footer>
               </blockquote>
             ))}

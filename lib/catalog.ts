@@ -1,5 +1,4 @@
 import catalogData from "@/data/catalog.json";
-import { TEST_BAG_PRODUCTS } from "./test-product";
 import {
   fetchCatalogFromDb,
   fetchCategoryFromDb,
@@ -45,30 +44,10 @@ function normalizeProduct(raw: RawProduct): Product {
 }
 
 const baseCatalog = catalogData as Catalog;
-const baseProducts = baseCatalog.products.map(normalizeProduct);
-
-const missingTestProducts = TEST_BAG_PRODUCTS.filter(
-  (test) =>
-    !baseProducts.some(
-      (p) => p.category === test.category && normalizeProductId(p.id) === normalizeProductId(test.id)
-    )
-);
-
 const jsonCatalog: Catalog = {
   ...baseCatalog,
-  products: [...baseProducts, ...missingTestProducts],
+  products: baseCatalog.products.map(normalizeProduct),
 };
-
-function mergeTestProducts(catalog: Catalog): Catalog {
-  const missing = TEST_BAG_PRODUCTS.filter(
-    (test) =>
-      !catalog.products.some(
-        (p) => p.category === test.category && normalizeProductId(p.id) === normalizeProductId(test.id)
-      )
-  );
-  if (!missing.length) return catalog;
-  return { ...catalog, products: [...catalog.products, ...missing] };
-}
 
 async function withDbFallback<T>(label: string, query: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -82,7 +61,7 @@ async function withDbFallback<T>(label: string, query: () => Promise<T>, fallbac
 async function resolveCatalog(): Promise<Catalog> {
   if (isDatabaseConfigured()) {
     const dbCatalog = await withDbFallback("catalog load", fetchCatalogFromDb, null);
-    if (dbCatalog) return mergeTestProducts(dbCatalog);
+    if (dbCatalog) return dbCatalog;
   }
   return jsonCatalog;
 }

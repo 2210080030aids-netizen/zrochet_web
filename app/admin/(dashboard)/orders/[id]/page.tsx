@@ -9,6 +9,7 @@ import AdminOrderTracking from "@/components/AdminOrderTracking";
 import { orderPaymentProofPath } from "@/lib/payment-proof";
 import { ORDER_STATUS } from "@/lib/order-status";
 import type { CartItem } from "@/lib/cart";
+import { orderInvoiceDownloadPath } from "@/lib/invoice";
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +19,37 @@ interface PageProps {
 
 export default async function AdminOrderDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const order = await prisma.order.findUnique({ where: { id } });
-  if (!order) notFound();
+  const order = await prisma.order.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      address: true,
+      items: true,
+      subtotal: true,
+      currency: true,
+      status: true,
+      paymentMethod: true,
+      paymentProofUrl: true,
+      paidAt: true,
+      approvedAt: true,
+      thankYouEmailSent: true,
+      thankYouEmailError: true,
+      rejectionReason: true,
+      rejectedAt: true,
+      rejectionEmailSent: true,
+      rejectionEmailError: true,
+      reviewedAt: true,
+      shippedAt: true,
+      deliveryPartner: true,
+      trackingId: true,
+      deliveredAt: true,
+      createdAt: true,
+    },
+  });
+  if (!order || !order.paymentProofUrl) notFound();
 
   const items = order.items as unknown as CartItem[];
   const paymentProofSrc = order.paymentProofUrl
@@ -140,10 +170,10 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
             </div>
           </dl>
           <a
-            href={`/api/orders/${order.id}/receipt`}
+            href={orderInvoiceDownloadPath(order.id)}
             className="mt-4 inline-flex rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
           >
-            Download receipt PDF
+            Download invoice PDF
           </a>
         </div>
       </div>
