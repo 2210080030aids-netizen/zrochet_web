@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import AdminSizeSelector, { ONE_SIZE } from "@/components/AdminSizeSelector";
 import { getProductColorFields } from "@/lib/color-variants";
 import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
 import type { ProductMedia } from "@/lib/types";
@@ -22,6 +23,7 @@ interface ProductData {
   inStock: boolean;
   colors: unknown;
   colorVariants: unknown;
+  sizes: unknown;
   media: unknown;
 }
 
@@ -31,6 +33,21 @@ interface SiblingProduct {
 }
 
 const STANDALONE_VALUE = "__standalone__";
+
+function parseProductSizes(value: unknown): string[] {
+  if (Array.isArray(value) && value.length > 0) {
+    return value.map(String);
+  }
+  return [ONE_SIZE];
+}
+
+/** Discount % from original (MRP) and selling price. */
+function calcDiscountPercent(price: number, originalPrice: number | null): number {
+  if (!originalPrice || originalPrice <= 0 || price <= 0 || originalPrice <= price) {
+    return 0;
+  }
+  return Math.round(((originalPrice - price) / originalPrice) * 100);
+}
 
 export default function EditProductPage({
   params,
@@ -45,6 +62,10 @@ export default function EditProductPage({
   const [colorName, setColorName] = useState("");
   const [colorSwatch, setColorSwatch] = useState("#C4A484");
   const [linkToProductId, setLinkToProductId] = useState("");
+  const [sizes, setSizes] = useState<string[]>([ONE_SIZE]);
+  const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
+  const [discountPercent, setDiscountPercent] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -70,12 +91,38 @@ export default function EditProductPage({
           );
         }
 
+        const nextPrice = String(loaded.price ?? "");
+        const nextOriginal =
+          loaded.originalPrice != null && loaded.originalPrice > 0
+            ? String(loaded.originalPrice)
+            : "";
+        setPrice(nextPrice);
+        setOriginalPrice(nextOriginal);
+        setDiscountPercent(
+          calcDiscountPercent(
+            Number(nextPrice) || 0,
+            nextOriginal ? Number(nextOriginal) : null
+          )
+        );
+
         const colorFields = getProductColorFields(loaded);
         setColorName(colorFields.colorName);
         setColorSwatch(colorFields.colorSwatch);
         setLinkToProductId(colorFields.linkToProductId || STANDALONE_VALUE);
+        setSizes(parseProductSizes(loaded.sizes));
       });
   }, [resolved]);
+
+  function updatePriceFields(nextPrice: string, nextOriginal: string) {
+    setPrice(nextPrice);
+    setOriginalPrice(nextOriginal);
+    setDiscountPercent(
+      calcDiscountPercent(
+        Number(nextPrice) || 0,
+        nextOriginal ? Number(nextOriginal) : null
+      )
+    );
+  }
 
   useEffect(() => {
     if (!product) return;
@@ -102,6 +149,12 @@ export default function EditProductPage({
       return;
     }
 
+    if (!sizes.length) {
+      setError("Add at least one size, or choose One Size.");
+      setSaving(false);
+      return;
+    }
+
     if (!media.length || media.some((item) => isEphemeralMediaSrc(item.src))) {
       setError("Wait for all image uploads to finish before saving.");
       setSaving(false);
@@ -109,18 +162,22 @@ export default function EditProductPage({
     }
 
     const form = new FormData(e.currentTarget);
+    const sellingPrice = Number(price);
+    const mrp = originalPrice ? Number(originalPrice) : null;
+    const discount = calcDiscountPercent(sellingPrice, mrp);
 
     const body = {
       name: String(form.get("name")),
-      price: Number(form.get("price")),
-      originalPrice: form.get("originalPrice") ? Number(form.get("originalPrice")) : null,
-      discountPercent: Number(form.get("discountPercent") || 0),
+      price: sellingPrice,
+      originalPrice: mrp && mrp > sellingPrice ? mrp : null,
+      discountPercent: discount,
       description: String(form.get("description")),
       material: String(form.get("material")),
       dimensions: String(form.get("dimensions")),
       quantity: Number(form.get("quantity")),
       colorName: colorName.trim(),
       colorSwatch,
+      sizes,
       linkToProductId:
         linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
       standalone: linkToProductId === STANDALONE_VALUE,
@@ -199,6 +256,9 @@ export default function EditProductPage({
             </div>
           </label>
         </div>
+        <div>
+          <AdminSizeSelector sizes={sizes} onChange={setSizes} />
+        </div>
         <label className="block text-sm font-medium text-brown-dark">
           Same bag, different colour
           <select
@@ -221,16 +281,41 @@ export default function EditProductPage({
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium text-brown-dark">
             Price (INR)
-            <input name="price" type="number" defaultValue={product.price} required className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+            <input
+              name="price"
+              type="number"
+              min="1"
+              value={price}
+              onChange={(e) => updatePriceFields(e.target.value, originalPrice)}
+              required
+              className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+            />
           </label>
           <label className="block text-sm font-medium text-brown-dark">
             Original Price
-            <input name="originalPrice" type="number" defaultValue={product.originalPrice ?? ""} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+            <input
+              name="originalPrice"
+              type="number"
+              min="0"
+              value={originalPrice}
+              onChange={(e) => updatePriceFields(price, e.target.value)}
+              placeholder="MRP before discount"
+              className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm"
+            />
           </label>
         </div>
         <label className="block text-sm font-medium text-brown-dark">
           Discount %
-          <input name="discountPercent" type="number" defaultValue={product.discountPercent} className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm" />
+          <input
+            name="discountPercent"
+            type="number"
+            value={discountPercent}
+            readOnly
+            className="mt-2 w-full rounded-xl border border-sand bg-sand/40 px-4 py-3 text-sm text-text-muted"
+          />
+          <span className="mt-2 block text-xs text-text-muted">
+            Calculated automatically from Original Price and selling Price.
+          </span>
         </label>
         <label className="block text-sm font-medium text-brown-dark">
           Description

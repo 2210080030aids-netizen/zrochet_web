@@ -72,6 +72,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
       ...productStockFields(body.quantity),
       media: mediaCheck.media as unknown as import("@prisma/client").Prisma.InputJsonValue,
       colors: [body.colorName.trim()],
+      sizes: (Array.isArray(body.sizes) && body.sizes.length
+        ? body.sizes.map(String)
+        : ["One Size"]) as unknown as import("@prisma/client").Prisma.InputJsonValue,
     },
   });
 

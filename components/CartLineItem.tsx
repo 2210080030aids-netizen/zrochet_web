@@ -40,6 +40,9 @@ export default function CartLineItem({ item }: CartLineItemProps) {
             <p className="mt-1 text-sm font-medium text-brown">
               {formatCartPrice(item.price, item.currency)}
             </p>
+            {item.size && (
+              <p className="mt-1 text-xs text-text-muted">Size: {item.size}</p>
+            )}
             <p className="mt-1 text-xs text-text-muted">In stock · Handmade</p>
           </div>
           <p className="font-display text-xl font-semibold text-brown-dark sm:text-right">
@@ -56,7 +59,12 @@ export default function CartLineItem({ item }: CartLineItemProps) {
                 className="px-3 py-2 text-lg transition hover:bg-beige disabled:opacity-40"
                 disabled={item.quantity <= 1}
                 onClick={() =>
-                  updateQuantity(item.category, item.id, item.quantity - 1)
+                  updateQuantity(
+                    item.category,
+                    item.id,
+                    item.quantity - 1,
+                    item.size
+                  )
                 }
                 aria-label="Decrease quantity"
               >
@@ -70,7 +78,12 @@ export default function CartLineItem({ item }: CartLineItemProps) {
                 className="px-3 py-2 text-lg transition hover:bg-beige disabled:opacity-40"
                 disabled={item.quantity >= 10}
                 onClick={() =>
-                  updateQuantity(item.category, item.id, item.quantity + 1)
+                  updateQuantity(
+                    item.category,
+                    item.id,
+                    item.quantity + 1,
+                    item.size
+                  )
                 }
                 aria-label="Increase quantity"
               >
@@ -81,7 +94,7 @@ export default function CartLineItem({ item }: CartLineItemProps) {
 
           <button
             type="button"
-            onClick={() => removeItem(item.category, item.id)}
+            onClick={() => removeItem(item.category, item.id, item.size)}
             className="text-sm font-medium text-text-muted transition hover:text-red-700"
           >
             Delete

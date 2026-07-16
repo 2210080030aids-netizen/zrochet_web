@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { normalizeProductId, resolveStoredProductId } from "@/lib/product-id";
+import { resolveStoredProductId } from "@/lib/product-id";
 import { sanitizeProductMedia } from "@/lib/product-media-storage";
+import { normalizeProductSizes } from "@/lib/product-sizes";
+import { resolveDisplayReviewStats } from "@/lib/review-stats";
 import type {
   Catalog,
   Category,
@@ -14,29 +16,60 @@ function parseJsonArray<T>(value: unknown, fallback: T[]): T[] {
   return fallback;
 }
 
-function mapProduct(row: {
-  productId: string;
-  categorySlug: string;
-  name: string;
-  price: number;
-  originalPrice: number | null;
-  discountPercent: number;
-  currency: string;
-  description: string;
-  material: string;
-  dimensions: string;
-  care: string;
-  colors: unknown;
-  colorVariants: unknown;
-  sizes: unknown;
-  rating: number;
-  reviewCount: number;
-  quantity: number;
-  inStock: boolean;
-  deliveryDays: string;
-  media: unknown;
-  collection: { label: string };
-}): Product {
+function reviewKey(categorySlug: string, productId: string): string {
+  return `${categorySlug}::${productId}`;
+}
+
+async function fetchLiveRatingsMap(): Promise<Map<string, number[]>> {
+  const map = new Map<string, number[]>();
+  try {
+    const rows = await prisma.$queryRaw<
+      { categorySlug: string; productId: string; rating: number }[]
+    >`
+      SELECT "categorySlug", "productId", rating
+      FROM "ProductReview"
+    `;
+
+    for (const row of rows) {
+      const key = reviewKey(row.categorySlug, row.productId);
+      const list = map.get(key) ?? [];
+      list.push(row.rating);
+      map.set(key, list);
+    }
+  } catch (error) {
+    console.error("Failed to load review ratings:", error);
+  }
+  return map;
+}
+
+function mapProduct(
+  row: {
+    productId: string;
+    categorySlug: string;
+    name: string;
+    price: number;
+    originalPrice: number | null;
+    discountPercent: number;
+    currency: string;
+    description: string;
+    material: string;
+    dimensions: string;
+    care: string;
+    colors: unknown;
+    colorVariants: unknown;
+    sizes: unknown;
+    rating: number;
+    reviewCount: number;
+    quantity: number;
+    inStock: boolean;
+    deliveryDays: string;
+    media: unknown;
+    collection: { label: string };
+  },
+  liveRatings: number[] = []
+): Product {
+  const stats = resolveDisplayReviewStats(row.productId, liveRatings);
+
   return {
     id: row.productId,
     category: row.categorySlug,
@@ -52,9 +85,9 @@ function mapProduct(row: {
     care: row.care,
     colors: parseJsonArray<string>(row.colors, []),
     colorVariants: parseJsonArray<ColorVariant>(row.colorVariants, []),
-    sizes: parseJsonArray<string>(row.sizes, ["One Size"]),
-    rating: row.rating,
-    reviewCount: row.reviewCount,
+    sizes: normalizeProductSizes(row.sizes),
+    rating: stats.rating,
+    reviewCount: stats.reviewCount,
     quantity: row.quantity,
     inStock: row.inStock,
     deliveryDays: row.deliveryDays,
@@ -64,12 +97,13 @@ function mapProduct(row: {
 
 export async function fetchCatalogFromDb(): Promise<Catalog | null> {
   try {
-    const [collections, products] = await Promise.all([
+    const [collections, products, liveRatings] = await Promise.all([
       prisma.collection.findMany({ orderBy: { sortOrder: "asc" } }),
       prisma.product.findMany({
         include: { collection: true },
         orderBy: [{ categorySlug: "asc" }, { productId: "asc" }],
       }),
+      fetchLiveRatingsMap(),
     ]);
 
     if (!collections.length) return null;
@@ -82,7 +116,12 @@ export async function fetchCatalogFromDb(): Promise<Catalog | null> {
         label: c.label,
         defaultPrice: c.defaultPrice,
       })),
-      products: products.map(mapProduct),
+      products: products.map((row) =>
+        mapProduct(
+          row,
+          liveRatings.get(reviewKey(row.categorySlug, row.productId)) ?? []
+        )
+      ),
     };
   } catch (error) {
     console.error("Failed to fetch catalog from database:", error);
@@ -97,12 +136,20 @@ export async function fetchCategoryFromDb(slug: string): Promise<Category | unde
 }
 
 export async function fetchProductsByCategoryFromDb(categorySlug: string): Promise<Product[]> {
-  const rows = await prisma.product.findMany({
-    where: { categorySlug },
-    include: { collection: true },
-    orderBy: { productId: "asc" },
-  });
-  return rows.map(mapProduct);
+  const [rows, liveRatings] = await Promise.all([
+    prisma.product.findMany({
+      where: { categorySlug },
+      include: { collection: true },
+      orderBy: { productId: "asc" },
+    }),
+    fetchLiveRatingsMap(),
+  ]);
+  return rows.map((row) =>
+    mapProduct(
+      row,
+      liveRatings.get(reviewKey(row.categorySlug, row.productId)) ?? []
+    )
+  );
 }
 
 export async function fetchProductFromDb(
@@ -112,13 +159,20 @@ export async function fetchProductFromDb(
   const storedId = await resolveStoredProductId(categorySlug, id);
   if (!storedId) return undefined;
 
-  const row = await prisma.product.findUnique({
-    where: {
-      categorySlug_productId: { categorySlug, productId: storedId },
-    },
-    include: { collection: true },
-  });
-  return row ? mapProduct(row) : undefined;
+  const [row, liveRatings] = await Promise.all([
+    prisma.product.findUnique({
+      where: {
+        categorySlug_productId: { categorySlug, productId: storedId },
+      },
+      include: { collection: true },
+    }),
+    fetchLiveRatingsMap(),
+  ]);
+  if (!row) return undefined;
+  return mapProduct(
+    row,
+    liveRatings.get(reviewKey(row.categorySlug, row.productId)) ?? []
+  );
 }
 
 export interface SiteSettingsData {

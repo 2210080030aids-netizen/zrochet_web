@@ -71,6 +71,9 @@ export async function POST(request: Request) {
           currency: "INR",
           colors: [body.colorName.trim()],
           colorVariants: [],
+          sizes: (Array.isArray(body.sizes) && body.sizes.length
+            ? body.sizes.map(String)
+            : ["One Size"]) as unknown as import("@prisma/client").Prisma.InputJsonValue,
         },
       });
     });

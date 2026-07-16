@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import ProductImage from "@/components/ProductImage";
-import { formatOriginalPrice, formatPrice, getCoverImage, getMediaCount } from "@/lib/catalog";
+import { formatOriginalPrice, formatPrice, getCoverImage } from "@/lib/catalog";
 
 interface ProductCardProps {
   product: Product;
@@ -23,11 +23,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           className="object-cover transition duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 50vw, 33vw"
         />
-        {getMediaCount(product) > 1 && (
-          <span className="absolute left-3 top-3 rounded-full bg-brown-dark/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white backdrop-blur-sm">
-            {getMediaCount(product)} views
-          </span>
-        )}
         {product.discountPercent > 0 && (
           <span className="absolute right-3 top-3 rounded-full bg-gold px-2.5 py-1 text-[10px] font-semibold text-brown-dark">
             -{product.discountPercent}%

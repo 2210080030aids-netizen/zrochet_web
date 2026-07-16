@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { formatOriginalPrice, formatPrice } from "@/lib/catalog";
+import { normalizeProductSizes } from "@/lib/product-sizes";
 import ColorVariantSelector from "./ColorVariantSelector";
 
 interface ProductInfoProps {
   product: Product;
+  sizes?: string[];
+  selectedSize?: string;
+  onSizeChange?: (size: string) => void;
+  rating?: number;
+  reviewCount?: number;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -26,13 +31,20 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function ProductInfo({ product }: ProductInfoProps) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
+export default function ProductInfo({
+  product,
+  sizes: sizesProp,
+  selectedSize: selectedSizeProp,
+  onSizeChange,
+  rating = product.rating,
+  reviewCount = product.reviewCount,
+}: ProductInfoProps) {
+  const sizes = normalizeProductSizes(sizesProp ?? product.sizes);
+  const selectedSize = selectedSizeProp ?? sizes[0];
   const original = formatOriginalPrice(product);
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <p className="text-xs font-medium uppercase tracking-[0.15em] text-gold">
           {product.collection}
@@ -43,10 +55,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <p className="mt-1 text-sm text-text-muted">SKU: {product.id}</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <StarRating rating={product.rating} />
-          <span className="text-sm font-medium text-brown-dark">{product.rating}</span>
+          <StarRating rating={rating} />
+          <span className="text-sm font-medium text-brown-dark">{rating}</span>
           <span className="text-sm text-text-muted">
-            ({product.reviewCount} reviews)
+            ({reviewCount} reviews)
           </span>
         </div>
 
@@ -60,13 +72,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </div>
       </div>
 
-      {/* Description */}
       <div>
         <h2 className="font-display text-xl font-semibold text-brown-dark">About this bag</h2>
         <p className="mt-3 leading-relaxed text-text-muted">{product.description}</p>
       </div>
 
-      {/* Features */}
       <div className="rounded-2xl border border-sand/60 bg-white/60 p-5">
         <h2 className="font-display text-xl font-semibold text-brown-dark">Product details</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -84,29 +94,34 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </dl>
       </div>
 
-      {/* Color variants — switch between Yellow/Black ↔ Blue mini bags, etc. */}
       <ColorVariantSelector product={product} />
 
-      {/* Size */}
-      <div className="space-y-5">
-        <div>
-          <h3 className="text-sm font-semibold text-brown-dark">Size</h3>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {product.sizes.map((size) => (
+      <div>
+        <h3 className="text-sm font-semibold text-brown-dark">Size</h3>
+        <div className="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
+          {sizes.map((size) => {
+            const selected = selectedSize === size;
+            const canToggle = sizes.length > 1;
+            return (
               <button
                 key={size}
                 type="button"
-                onClick={() => setSelectedSize(size)}
+                role="radio"
+                aria-checked={selected}
+                onClick={() => {
+                  if (!canToggle && !onSizeChange) return;
+                  onSizeChange?.(size);
+                }}
                 className={`rounded-full border px-4 py-2 text-sm transition ${
-                  selectedSize === size
+                  selected
                     ? "border-brown-dark bg-brown-dark text-white"
                     : "border-sand bg-white text-text hover:border-gold"
                 }`}
               >
                 {size}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

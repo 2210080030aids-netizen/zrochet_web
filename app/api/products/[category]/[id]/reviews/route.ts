@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { resolveStoredProductId } from "@/lib/product-id";
 import {
   createProductReview,
-  getProductReviewStats,
   listProductReviews,
+  syncProductRatingFromReviews,
 } from "@/lib/product-reviews-db";
+import { resolveDisplayReviewStats } from "@/lib/review-stats";
 
 interface RouteParams {
   params: Promise<{ category: string; id: string }>;
@@ -16,13 +16,20 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const { category, id } = await params;
     const productId = await resolveStoredProductId(category, id);
     if (!productId) {
-      return NextResponse.json({ reviews: [] });
+      return NextResponse.json({ reviews: [], stats: { rating: 0, reviewCount: 0 } });
     }
     const reviews = await listProductReviews(category, productId);
-    return NextResponse.json({ reviews });
+    const stats = resolveDisplayReviewStats(
+      productId,
+      reviews.map((review) => review.rating)
+    );
+    return NextResponse.json({ reviews, stats });
   } catch (error) {
     console.error("Reviews fetch failed:", error);
-    return NextResponse.json({ reviews: [], error: "Could not load reviews" }, { status: 500 });
+    return NextResponse.json(
+      { reviews: [], stats: { rating: 0, reviewCount: 0 }, error: "Could not load reviews" },
+      { status: 500 }
+    );
   }
 }
 
@@ -64,17 +71,9 @@ export async function POST(request: Request, { params }: RouteParams) {
       rating,
     });
 
-    const stats = await getProductReviewStats(category, productId);
+    const stats = await syncProductRatingFromReviews(category, productId);
 
-    await prisma.product.update({
-      where: { categorySlug_productId: { categorySlug: category, productId } },
-      data: {
-        rating: Math.round((stats._avg.rating ?? rating) * 10) / 10,
-        reviewCount: stats._count.rating,
-      },
-    });
-
-    return NextResponse.json({ review }, { status: 201 });
+    return NextResponse.json({ review, stats }, { status: 201 });
   } catch (error) {
     console.error("Review create failed:", error);
     return NextResponse.json({ error: "Could not post your comment" }, { status: 500 });

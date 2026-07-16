@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
+import AdminSizeSelector, { ONE_SIZE } from "@/components/AdminSizeSelector";
 import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
 import type { ProductMedia } from "@/lib/types";
 
@@ -29,6 +30,7 @@ export default function NewProductPage() {
   const [colorName, setColorName] = useState("");
   const [colorSwatch, setColorSwatch] = useState("#C4A484");
   const [linkToProductId, setLinkToProductId] = useState("");
+  const [sizes, setSizes] = useState<string[]>([ONE_SIZE]);
   const [media, setMedia] = useState<ProductMedia[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -83,6 +85,12 @@ export default function NewProductPage() {
       return;
     }
 
+    if (!sizes.length) {
+      setError("Add at least one size, or choose One Size.");
+      setSaving(false);
+      return;
+    }
+
     const form = new FormData(e.currentTarget);
     const body = {
       categorySlug: String(form.get("categorySlug")),
@@ -92,6 +100,7 @@ export default function NewProductPage() {
       quantity: Number(form.get("quantity")),
       colorName: colorName.trim(),
       colorSwatch,
+      sizes,
       linkToProductId: linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
       standalone: linkToProductId === STANDALONE_VALUE,
       media,
@@ -183,6 +192,9 @@ export default function NewProductPage() {
               />
             </div>
           </label>
+        </div>
+        <div>
+          <AdminSizeSelector sizes={sizes} onChange={setSizes} />
         </div>
         <label className="block text-sm font-medium text-brown-dark">
           Same bag, different colour

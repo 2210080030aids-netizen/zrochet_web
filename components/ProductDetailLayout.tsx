@@ -1,26 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Product } from "@/lib/types";
+import type { ReviewStats } from "@/lib/review-stats";
+import { normalizeProductSizes } from "@/lib/product-sizes";
 import ThumbnailRail from "./ThumbnailRail";
 import MainProductMedia from "./MainProductMedia";
+import ProductInfo from "./ProductInfo";
 import ProductReviews from "./ProductReviews";
+import PurchasePanel from "./PurchasePanel";
 
 interface ProductDetailLayoutProps {
   product: Product;
-  info: React.ReactNode;
-  purchase: React.ReactNode;
 }
 
-export default function ProductDetailLayout({
-  product,
-  info,
-  purchase,
-}: ProductDetailLayoutProps) {
+export default function ProductDetailLayout({ product }: ProductDetailLayoutProps) {
+  const sizes = normalizeProductSizes(product.sizes);
   const [activeIndex, setActiveIndex] = useState(0);
   const [videoPlayToken, setVideoPlayToken] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(sizes[0]);
+  const [reviewStats, setReviewStats] = useState<ReviewStats>({
+    rating: product.rating,
+    reviewCount: product.reviewCount,
+  });
   const media = product.media ?? [];
   const activeItem = media[activeIndex];
+
+  useEffect(() => {
+    const nextSizes = normalizeProductSizes(product.sizes);
+    setSelectedSize((current) =>
+      nextSizes.includes(current) ? current : nextSizes[0]
+    );
+  }, [product.id, product.sizes]);
 
   function handleMediaSelect(index: number) {
     setActiveIndex(index);
@@ -37,6 +48,10 @@ export default function ProductDetailLayout({
       </div>
     );
   }
+
+  const purchase = (
+    <PurchasePanel product={product} selectedSize={selectedSize} />
+  );
 
   return (
     <>
@@ -70,14 +85,27 @@ export default function ProductDetailLayout({
           </div>
         </div>
 
-        <div>{info}</div>
+        <div>
+          <ProductInfo
+            product={product}
+            sizes={sizes}
+            selectedSize={selectedSize}
+            onSizeChange={setSelectedSize}
+            rating={reviewStats.rating}
+            reviewCount={reviewStats.reviewCount}
+          />
+        </div>
 
         <div className="hidden lg:block">
           <div className="sticky top-24">{purchase}</div>
         </div>
       </div>
 
-      <ProductReviews categorySlug={product.category} productId={product.id} />
+      <ProductReviews
+        categorySlug={product.category}
+        productId={product.id}
+        onStatsChange={setReviewStats}
+      />
     </>
   );
 }

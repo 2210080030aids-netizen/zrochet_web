@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductDetailLayout from "@/components/ProductDetailLayout";
-import ProductInfo from "@/components/ProductInfo";
-import PurchasePanel from "@/components/PurchasePanel";
 import {
   getCategory,
   getProduct,
@@ -44,11 +42,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span className="font-medium text-brown-dark">{product.name}</span>
         </nav>
 
-        <ProductDetailLayout
-          product={product}
-          info={<ProductInfo product={product} />}
-          purchase={<PurchasePanel product={product} />}
-        />
+        <ProductDetailLayout product={product} />
       </div>
     </div>
   );

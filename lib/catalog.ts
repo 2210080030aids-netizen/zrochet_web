@@ -11,6 +11,7 @@ import { resolveProductMediaSrc, sanitizeProductMedia } from "./product-media-st
 import { inStockFromQuantity, normalizeQuantity } from "./product-stock";
 import { isDatabaseConfigured } from "./prisma";
 import { normalizeProductId } from "./product-id";
+import { normalizeProductSizes } from "./product-sizes";
 import type { Catalog, Product, Category, ProductMedia } from "./types";
 
 export type { SiteSettingsData };
@@ -37,7 +38,7 @@ function normalizeProduct(raw: RawProduct): Product {
     media: sanitizeProductMedia(media),
     colorVariants: raw.colorVariants ?? [],
     colors: raw.colors ?? [],
-    sizes: raw.sizes ?? ["One Size"],
+    sizes: normalizeProductSizes(raw.sizes),
     quantity,
     inStock: inStockFromQuantity(quantity),
   };

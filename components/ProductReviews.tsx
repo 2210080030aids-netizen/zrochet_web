@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSampleReviewsForProduct } from "@/lib/sample-reviews";
+import { computeReviewStats, type ReviewStats } from "@/lib/review-stats";
 
 interface ProductReview {
   id: string;
@@ -24,6 +25,7 @@ interface DisplayReview {
 interface ProductReviewsProps {
   categorySlug: string;
   productId: string;
+  onStatsChange?: (stats: ReviewStats) => void;
 }
 
 const PAGE_SIZE = 3;
@@ -103,7 +105,11 @@ function ReviewCard({ review }: { review: DisplayReview }) {
   );
 }
 
-export default function ProductReviews({ categorySlug, productId }: ProductReviewsProps) {
+export default function ProductReviews({
+  categorySlug,
+  productId,
+  onStatsChange,
+}: ProductReviewsProps) {
   const sampleReviews = getSampleReviewsForProduct(productId);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +122,14 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
   const [body, setBody] = useState("");
   const [rating, setRating] = useState(5);
 
+  function emitStats(liveReviews: ProductReview[]) {
+    const stats = computeReviewStats([
+      ...liveReviews.map((review) => review.rating),
+      ...sampleReviews.map((review) => review.rating),
+    ]);
+    onStatsChange?.(stats);
+  }
+
   async function loadReviews() {
     try {
       const res = await fetch(
@@ -123,9 +137,16 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
       );
       const text = await res.text();
       const data = text ? JSON.parse(text) : { reviews: [] };
-      setReviews(data.reviews ?? []);
+      const nextReviews = data.reviews ?? [];
+      setReviews(nextReviews);
+      if (data.stats) {
+        onStatsChange?.(data.stats);
+      } else {
+        emitStats(nextReviews);
+      }
     } catch {
       setReviews([]);
+      emitStats([]);
     } finally {
       setLoading(false);
     }
@@ -134,6 +155,7 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
   useEffect(() => {
     setPage(0);
     loadReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when product changes
   }, [categorySlug, productId]);
 
   const allReviews = useMemo<DisplayReview[]>(() => {
@@ -191,7 +213,13 @@ export default function ProductReviews({ categorySlug, productId }: ProductRevie
       return;
     }
 
-    setReviews((current) => [data.review, ...current]);
+    const nextReviews = [data.review, ...reviews];
+    setReviews(nextReviews);
+    if (data.stats) {
+      onStatsChange?.(data.stats);
+    } else {
+      emitStats(nextReviews);
+    }
     setPage(0);
     setAuthorName("");
     setTitle("");

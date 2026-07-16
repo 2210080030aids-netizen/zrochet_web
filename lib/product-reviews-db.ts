@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { resolveDisplayReviewStats } from "@/lib/review-stats";
 
 export interface StoredProductReview {
   id: string;
@@ -100,4 +101,23 @@ export async function getProductReviewStats(categorySlug: string, productId: str
     _avg: { rating: stats?.avgRating ?? null },
     _count: { rating: Number(stats?.reviewCount ?? 0) },
   };
+}
+
+/** Persist display rating + count (live comments + sample comments) onto Product. */
+export async function syncProductRatingFromReviews(
+  categorySlug: string,
+  productId: string
+): Promise<{ rating: number; reviewCount: number }> {
+  const reviews = await listProductReviews(categorySlug, productId);
+  const stats = resolveDisplayReviewStats(
+    productId,
+    reviews.map((review) => review.rating)
+  );
+
+  await prisma.product.update({
+    where: { categorySlug_productId: { categorySlug, productId } },
+    data: { rating: stats.rating, reviewCount: stats.reviewCount },
+  });
+
+  return stats;
 }

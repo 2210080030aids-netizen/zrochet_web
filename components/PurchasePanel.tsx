@@ -8,9 +8,10 @@ import { useCart } from "@/lib/cart-context";
 
 interface PurchasePanelProps {
   product: Product;
+  selectedSize?: string;
 }
 
-export default function PurchasePanel({ product }: PurchasePanelProps) {
+export default function PurchasePanel({ product, selectedSize }: PurchasePanelProps) {
   const router = useRouter();
   const { addItem } = useCart();
   const maxQuantity = Math.max(0, Math.min(10, product.quantity));
@@ -19,17 +20,18 @@ export default function PurchasePanel({ product }: PurchasePanelProps) {
 
   const original = formatOriginalPrice(product);
   const canPurchase = product.inStock && product.quantity > 0;
+  const size = selectedSize || product.sizes?.[0] || "One Size";
 
   function handleAddToCart() {
     if (!canPurchase) return;
-    addItem(product, quantity);
+    addItem(product, quantity, size);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   }
 
   function handleBuyNow() {
     if (!canPurchase) return;
-    addItem(product, quantity);
+    addItem(product, quantity, size);
     router.push("/checkout");
   }
 

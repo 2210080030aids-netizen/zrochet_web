@@ -6,12 +6,13 @@ export interface CartItem {
   currency: string;
   image: string;
   quantity: number;
+  size?: string;
 }
 
 export const CART_STORAGE_KEY = "zrochet-cart";
 
-export function cartItemKey(category: string, id: string): string {
-  return `${category}:${id}`;
+export function cartItemKey(category: string, id: string, size?: string): string {
+  return size ? `${category}:${id}:${size}` : `${category}:${id}`;
 }
 
 export function getTotalItems(items: CartItem[]): number {
