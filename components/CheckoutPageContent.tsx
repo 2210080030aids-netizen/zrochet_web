@@ -6,8 +6,68 @@ import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 
+import { useState } from "react";
+
 import { formatCartPrice } from "@/lib/cart";
 import { useCart } from "@/lib/cart-context";
+
+interface CheckoutValues {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+type CheckoutErrors = Partial<Record<keyof CheckoutValues, string>>;
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Reduce a phone string to its local 10-digit number, dropping +91/91/0 prefixes. */
+function toLocalPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+function validateCheckout(values: CheckoutValues): CheckoutErrors {
+  const errors: CheckoutErrors = {};
+
+  const name = values.name.trim();
+  if (!name) {
+    errors.name = "Please enter your full name.";
+  } else if (name.length < 2) {
+    errors.name = "Name must be at least 2 characters.";
+  } else if (!/^[A-Za-z][A-Za-z\s.'-]*$/.test(name)) {
+    errors.name = "Name can only contain letters, spaces, and . ' -";
+  }
+
+  const email = values.email.trim();
+  if (!email) {
+    errors.email = "Please enter your email.";
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.email = "Enter a valid email address (e.g. you@example.com).";
+  }
+
+  const phone = values.phone.trim();
+  const localPhone = toLocalPhone(phone);
+  if (!phone) {
+    errors.phone = "Please enter your phone number.";
+  } else if (localPhone.length !== 10) {
+    errors.phone = "Phone number must be exactly 10 digits.";
+  } else if (!/^[6-9]\d{9}$/.test(localPhone)) {
+    errors.phone = "Enter a valid 10-digit mobile number.";
+  }
+
+  const address = values.address.trim();
+  if (!address) {
+    errors.address = "Please enter your delivery address.";
+  } else if (address.length < 10) {
+    errors.address = "Please enter a complete address (street, city, PIN).";
+  }
+
+  return errors;
+}
 
 export default function CheckoutPageContent() {
   const router = useRouter();
@@ -15,6 +75,31 @@ export default function CheckoutPageContent() {
   const { items, subtotal, totalItems, isReady } = useCart();
 
   const currency = items[0]?.currency ?? "INR";
+
+  const [values, setValues] = useState<CheckoutValues>({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [errors, setErrors] = useState<CheckoutErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof CheckoutValues, boolean>>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  function setField(field: keyof CheckoutValues, value: string) {
+    setValues((prev) => {
+      const next = { ...prev, [field]: value };
+      if (touched[field]) {
+        setErrors(validateCheckout(next));
+      }
+      return next;
+    });
+  }
+
+  function handleBlur(field: keyof CheckoutValues) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setErrors(validateCheckout(values));
+  }
 
 
 
@@ -66,7 +151,14 @@ export default function CheckoutPageContent() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const form = new FormData(e.currentTarget);
+    const validationErrors = validateCheckout(values);
+    setTouched({ name: true, email: true, phone: true, address: true });
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    setSubmitting(true);
 
     let orderId = "";
     try {
@@ -74,10 +166,10 @@ export default function CheckoutPageContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: String(form.get("name")),
-          email: String(form.get("email")),
-          phone: String(form.get("phone")),
-          address: String(form.get("address")),
+          name: values.name.trim(),
+          email: values.email.trim(),
+          phone: toLocalPhone(values.phone),
+          address: values.address.trim(),
           items,
           subtotal,
           currency,
@@ -90,6 +182,7 @@ export default function CheckoutPageContent() {
       } else {
         const data = await res.json().catch(() => ({}));
         alert(data.error || "Could not create order. Please try again.");
+        setSubmitting(false);
         return;
       }
     } catch {
@@ -98,6 +191,7 @@ export default function CheckoutPageContent() {
 
     if (!orderId) {
       alert("Could not create order. Please try again.");
+      setSubmitting(false);
       return;
     }
 
@@ -199,18 +293,20 @@ export default function CheckoutPageContent() {
           Full Name
 
           <input
-
             required
-
             type="text"
-
             name="name"
-
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm outline-none focus:border-gold"
-
+            autoComplete="name"
+            value={values.name}
+            onChange={(e) => setField("name", e.target.value)}
+            onBlur={() => handleBlur("name")}
+            aria-invalid={Boolean(errors.name)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.name ? "border-red-400" : "border-sand"
+            }`}
             placeholder="Your name"
-
           />
+          {errors.name && <span className="mt-1 block text-xs font-normal text-red-600">{errors.name}</span>}
 
         </label>
 
@@ -219,18 +315,21 @@ export default function CheckoutPageContent() {
           Email
 
           <input
-
             required
-
             type="email"
-
             name="email"
-
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm outline-none focus:border-gold"
-
+            inputMode="email"
+            autoComplete="email"
+            value={values.email}
+            onChange={(e) => setField("email", e.target.value)}
+            onBlur={() => handleBlur("email")}
+            aria-invalid={Boolean(errors.email)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.email ? "border-red-400" : "border-sand"
+            }`}
             placeholder="you@example.com"
-
           />
+          {errors.email && <span className="mt-1 block text-xs font-normal text-red-600">{errors.email}</span>}
 
         </label>
 
@@ -239,18 +338,22 @@ export default function CheckoutPageContent() {
           Phone
 
           <input
-
             required
-
             type="tel"
-
             name="phone"
-
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm outline-none focus:border-gold"
-
-            placeholder="+91 98765 43210"
-
+            inputMode="numeric"
+            autoComplete="tel"
+            maxLength={15}
+            value={values.phone}
+            onChange={(e) => setField("phone", e.target.value)}
+            onBlur={() => handleBlur("phone")}
+            aria-invalid={Boolean(errors.phone)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.phone ? "border-red-400" : "border-sand"
+            }`}
+            placeholder="98765 43210"
           />
+          {errors.phone && <span className="mt-1 block text-xs font-normal text-red-600">{errors.phone}</span>}
 
         </label>
 
@@ -259,18 +362,20 @@ export default function CheckoutPageContent() {
           Delivery Address
 
           <textarea
-
             required
-
             name="address"
-
             rows={3}
-
-            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm outline-none focus:border-gold"
-
+            autoComplete="street-address"
+            value={values.address}
+            onChange={(e) => setField("address", e.target.value)}
+            onBlur={() => handleBlur("address")}
+            aria-invalid={Boolean(errors.address)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.address ? "border-red-400" : "border-sand"
+            }`}
             placeholder="Street, city, state, PIN"
-
           />
+          {errors.address && <span className="mt-1 block text-xs font-normal text-red-600">{errors.address}</span>}
 
         </label>
 
@@ -288,9 +393,10 @@ export default function CheckoutPageContent() {
 
         <button
           type="submit"
-          className="w-full rounded-full bg-brown-dark py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
+          disabled={submitting}
+          className="w-full rounded-full bg-brown-dark py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Proceed to Pay
+          {submitting ? "Processing…" : "Proceed to Pay"}
         </button>
 
       </form>

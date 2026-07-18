@@ -34,6 +34,7 @@ export interface Product {
   colors: string[];
   colorVariants: ColorVariant[];
   sizes: string[];
+  highlights: string[];
   rating: number;
   reviewCount: number;
   quantity: number;

@@ -47,7 +47,7 @@ export default function AdminEmailTestPanel() {
 
   return (
     <div className="mt-10 max-w-2xl rounded-2xl border border-sand bg-white p-6">
-      <h2 className="font-display text-xl font-semibold text-brown-dark">Order email</h2>
+      <h2 className="font-display text-xl font-semibold text-brown-dark">Check email</h2>
       <p className="mt-2 text-sm text-text-muted">
         Thank-you emails send when you approve an order. Gmail SMTP works on localhost only —
         Railway requires SendGrid (free).

@@ -12,6 +12,16 @@ const DEFAULT_SETTINGS: SiteSettingsData = {
   upiId: "sarathbhushan04@oksbi",
   upiPayeeName: "Zrochet",
   instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
+  heroEyebrow: "Artisan Made · One of a Kind",
+  heroTitle: "Handcrafted Crochet Creations",
+  heroText:
+    "Discover beautifully handmade crochet bags, purses, and thoughtful gifts — each piece woven with care, warmth, and timeless charm.",
+  storyImage: "",
+  storyTitle: "The Heart of Zrochet",
+  storyText: "",
+  storyPoint1: "",
+  storyPoint2: "",
+  storyPoint3: "",
 };
 
 export default function Footer({ settings = DEFAULT_SETTINGS }: { settings?: SiteSettingsData }) {

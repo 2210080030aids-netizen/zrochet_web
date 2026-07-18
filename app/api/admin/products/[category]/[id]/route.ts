@@ -4,6 +4,7 @@ import {
   removeProductFromColorGroups,
   syncProductColorVariants,
 } from "@/lib/color-variants";
+import { normalizeProductHighlights } from "@/lib/product-highlights";
 import { renumberProductsAfterDelete, resolveStoredProductId } from "@/lib/product-id";
 import { validatePersistableMedia } from "@/lib/product-media-storage";
 import { productStockFields } from "@/lib/product-stock";
@@ -75,6 +76,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
       sizes: (Array.isArray(body.sizes) && body.sizes.length
         ? body.sizes.map(String)
         : ["One Size"]) as unknown as import("@prisma/client").Prisma.InputJsonValue,
+      highlights: normalizeProductHighlights(
+        body.highlights
+      ) as unknown as import("@prisma/client").Prisma.InputJsonValue,
     },
   });
 

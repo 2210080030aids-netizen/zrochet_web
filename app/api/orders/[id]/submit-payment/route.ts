@@ -11,6 +11,8 @@ import {
 } from "@/lib/order-id";
 import { orderPaymentProofPath } from "@/lib/payment-proof";
 import { sendPaymentReceivedEmail } from "@/lib/email";
+import { deductStockForOrder } from "@/lib/product-stock";
+import type { CartItem } from "@/lib/cart";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -65,30 +67,35 @@ export async function POST(request: Request, { params }: RouteParams) {
 
       for (let attempt = 0; attempt < MAX_ID_ALLOCATION_ATTEMPTS; attempt++) {
         try {
-          created = await prisma.$transaction(async (tx) => {
-            const placedId = await allocateNextOrderId(tx);
-            const next = await tx.order.create({
-              data: {
-                id: placedId,
-                name: order.name,
-                email: order.email,
-                phone: order.phone,
-                address: order.address,
-                items: order.items as Prisma.InputJsonValue,
-                subtotal: order.subtotal,
-                currency: order.currency,
-                paymentMethod: order.paymentMethod || "upi",
-                paymentProofUrl: orderPaymentProofPath(placedId),
-                paymentProofMime: file.type,
-                paymentProofData: buffer,
-                status: ORDER_STATUS.PAYMENT_SUBMITTED,
-                paidAt,
-                createdAt: order.createdAt,
-              },
-            });
-            await tx.order.delete({ where: { id: order.id } });
-            return next;
-          });
+          created = await prisma.$transaction(
+            async (tx) => {
+              const placedId = await allocateNextOrderId(tx);
+              const next = await tx.order.create({
+                data: {
+                  id: placedId,
+                  name: order.name,
+                  email: order.email,
+                  phone: order.phone,
+                  address: order.address,
+                  items: order.items as Prisma.InputJsonValue,
+                  subtotal: order.subtotal,
+                  currency: order.currency,
+                  paymentMethod: order.paymentMethod || "upi",
+                  paymentProofUrl: orderPaymentProofPath(placedId),
+                  paymentProofMime: file.type,
+                  paymentProofData: buffer,
+                  status: ORDER_STATUS.PAYMENT_SUBMITTED,
+                  paidAt,
+                  createdAt: order.createdAt,
+                },
+              });
+              await tx.order.delete({ where: { id: order.id } });
+              return next;
+            },
+            // Railway's public DB proxy adds latency, so allow more time than
+            // Prisma's 5s default before the interactive transaction closes.
+            { maxWait: 15000, timeout: 30000 }
+          );
           break;
         } catch (error) {
           lastError = error;
@@ -116,6 +123,13 @@ export async function POST(request: Request, { params }: RouteParams) {
           paymentMethod: order.paymentMethod || "upi",
         },
       });
+    }
+
+    // Reserve stock the moment payment proof is submitted so the item can't be
+    // bought by anyone else while the order is under review. Skip if the order
+    // was already awaiting review (a re-upload) to avoid deducting twice.
+    if (order.status !== ORDER_STATUS.PAYMENT_SUBMITTED) {
+      await deductStockForOrder(placed.items as unknown as CartItem[]);
     }
 
     const filename = `${placed.id}.${ext}`;

@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
-  ORDER_STATUS_FILTER_OPTIONS,
+  ORDER_VIEW_FILTER_GROUPS,
   buildOrderFilterQuery,
   hasActiveOrderFilters,
   parseOrderFilters,
@@ -13,16 +13,20 @@ export default function AdminOrdersFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const current = parseOrderFilters({
-    status: searchParams.get("status") ?? undefined,
+    view: searchParams.get("view") ?? undefined,
     q: searchParams.get("q") ?? undefined,
+    month: searchParams.get("month") ?? undefined,
   });
 
   const [search, setSearch] = useState(current.q);
+  const [monthFocused, setMonthFocused] = useState(false);
+  const showMonthHint = !current.month && !monthFocused;
 
-  function applyFilters(next: { status?: string; q?: string }) {
+  function applyFilters(next: { view?: string; q?: string; month?: string }) {
     const filters = parseOrderFilters({
-      status: next.status ?? current.status,
+      view: next.view ?? current.view,
       q: next.q ?? current.q,
+      month: next.month ?? current.month,
     });
     router.push(`/admin/orders${buildOrderFilterQuery(filters)}`);
   }
@@ -35,21 +39,51 @@ export default function AdminOrdersFilters() {
   return (
     <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-sand bg-white p-4">
       <div>
-        <label htmlFor="order-status-filter" className="block text-xs font-medium text-text-muted">
-          Status
-        </label>
         <select
-          id="order-status-filter"
-          value={current.status}
-          onChange={(e) => applyFilters({ status: e.target.value })}
-          className="mt-1 min-w-[180px] rounded-xl border border-sand bg-cream/30 px-3 py-2 text-sm text-brown-dark focus:border-brown focus:outline-none"
+          id="order-view-filter"
+          aria-label="Filter by stage"
+          value={current.view}
+          onChange={(e) => applyFilters({ view: e.target.value })}
+          className="min-w-[180px] rounded-xl border border-sand bg-cream/30 px-3 py-2 text-sm text-brown-dark focus:border-brown focus:outline-none"
         >
-          {ORDER_STATUS_FILTER_OPTIONS.map((option) => (
-            <option key={option.value || "all"} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {ORDER_VIEW_FILTER_GROUPS.map((group, index) =>
+            group.label ? (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map((option) => (
+                  <option key={option.value || "all"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              group.options.map((option) => (
+                <option key={option.value || `all-${index}`} value={option.value}>
+                  {option.label}
+                </option>
+              ))
+            )
+          )}
         </select>
+      </div>
+
+      <div className="relative">
+        <input
+          id="order-month-filter"
+          type="month"
+          aria-label="Filter by month and year"
+          value={current.month}
+          onFocus={() => setMonthFocused(true)}
+          onBlur={() => setMonthFocused(false)}
+          onChange={(e) => applyFilters({ month: e.target.value })}
+          className={`rounded-xl border border-sand bg-cream/30 px-3 py-2 text-sm focus:border-brown focus:outline-none ${
+            showMonthHint ? "text-transparent" : "text-brown-dark"
+          }`}
+        />
+        {showMonthHint && (
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-text-muted">
+            Month &amp; Year
+          </span>
+        )}
       </div>
 
       <form
@@ -60,16 +94,14 @@ export default function AdminOrdersFilters() {
         }}
       >
         <div className="min-w-[220px] flex-1">
-          <label htmlFor="order-search-filter" className="block text-xs font-medium text-text-muted">
-            Search
-          </label>
           <input
             id="order-search-filter"
             type="search"
+            aria-label="Search orders"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Name, email, phone, or order ID"
-            className="mt-1 w-full rounded-xl border border-sand bg-cream/30 px-3 py-2 text-sm text-brown-dark placeholder:text-text-muted focus:border-brown focus:outline-none"
+            className="w-full rounded-xl border border-sand bg-cream/30 px-3 py-2 text-sm text-brown-dark placeholder:text-text-muted focus:border-brown focus:outline-none"
           />
         </div>
         <button

@@ -5,7 +5,7 @@ import { ORDER_STATUS } from "@/lib/order-status";
 import { sendThankYouEmail, sendRejectionEmail, sendShippedEmail, sendDeliveredEmail } from "@/lib/email";
 import { generateReceiptPdf } from "@/lib/receipt-pdf";
 import { buildTrackingUpdateData, type FulfillmentStage } from "@/lib/order-tracking";
-import { deductStockForOrder } from "@/lib/product-stock";
+import { restoreStockForOrder } from "@/lib/product-stock";
 import { fetchSiteSettings } from "@/lib/catalog-db";
 import type { CartItem } from "@/lib/cart";
 
@@ -145,6 +145,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Rejection reason is required" }, { status: 400 });
     }
 
+    // Give the reserved stock back so the product is purchasable again.
+    if (order.status === ORDER_STATUS.PAYMENT_SUBMITTED) {
+      await restoreStockForOrder(order.items as unknown as CartItem[]);
+    }
+
     const updated = await prisma.order.update({
       where: { id },
       data: {
@@ -250,9 +255,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Order is already approved" }, { status: 400 });
   }
 
-  const items = order.items as unknown as CartItem[];
-  await deductStockForOrder(items);
-
+  // Stock was already reserved when the customer submitted payment proof,
+  // so approval only finalizes the order without deducting again.
   const updated = await prisma.order.update({
     where: { id },
     data: {

@@ -11,8 +11,9 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const filters = parseOrderFilters({
-    status: searchParams.get("status") ?? undefined,
+    view: searchParams.get("view") ?? undefined,
     q: searchParams.get("q") ?? undefined,
+    month: searchParams.get("month") ?? undefined,
   });
   const where = buildOrderWhereClause(filters);
 
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
   });
   const csv = buildOrdersCsv(orders);
   const date = new Date().toISOString().slice(0, 10);
-  const suffix = filters.status ? `-${filters.status}` : "";
+  const suffix = filters.view ? `-${filters.view}` : "";
 
   return new NextResponse(csv, {
     headers: {

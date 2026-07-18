@@ -85,3 +85,12 @@ export async function logoutAdminAndGoToStore() {
   await clearAdminSession();
   window.location.href = "/";
 }
+
+/**
+ * Call when an admin API responds 401. The UI session (sessionStorage flag)
+ * has drifted from the server cookie, so clear it and send the admin to login.
+ */
+export async function handleAdminUnauthorized() {
+  await clearAdminSession();
+  window.location.replace("/admin/login");
+}

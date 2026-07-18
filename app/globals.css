@@ -55,3 +55,15 @@
 .animate-fade-up {
   animation: fade-up 0.6s ease forwards;
 }
+
+/* Hide native number-input spinner arrows within the admin panel */
+.admin-area input[type="number"]::-webkit-outer-spin-button,
+.admin-area input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.admin-area input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

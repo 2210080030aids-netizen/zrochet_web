@@ -1,5 +1,7 @@
 import catalogData from "@/data/catalog.json";
 import {
+  DEFAULT_HERO,
+  DEFAULT_STORY,
   fetchCatalogFromDb,
   fetchCategoryFromDb,
   fetchProductFromDb,
@@ -10,6 +12,7 @@ import {
 import { resolveProductMediaSrc, sanitizeProductMedia } from "./product-media-storage";
 import { inStockFromQuantity, normalizeQuantity } from "./product-stock";
 import { isDatabaseConfigured } from "./prisma";
+import { normalizeProductHighlights } from "./product-highlights";
 import { normalizeProductId } from "./product-id";
 import { normalizeProductSizes } from "./product-sizes";
 import type { Catalog, Product, Category, ProductMedia } from "./types";
@@ -39,6 +42,7 @@ function normalizeProduct(raw: RawProduct): Product {
     colorVariants: raw.colorVariants ?? [],
     colors: raw.colors ?? [],
     sizes: normalizeProductSizes(raw.sizes),
+    highlights: normalizeProductHighlights(raw.highlights),
     quantity,
     inStock: inStockFromQuantity(quantity),
   };
@@ -129,6 +133,8 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
       upiId: process.env.NEXT_PUBLIC_UPI_ID?.trim() || "sarathbhushan04@oksbi",
       upiPayeeName: process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || "Zrochet",
       instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
+      ...DEFAULT_HERO,
+      ...DEFAULT_STORY,
     });
   }
   return {
@@ -141,6 +147,8 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
     upiId: process.env.NEXT_PUBLIC_UPI_ID?.trim() || "sarathbhushan04@oksbi",
     upiPayeeName: process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || "Zrochet",
     instagramUrl: "https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6",
+    ...DEFAULT_HERO,
+    ...DEFAULT_STORY,
   };
 }
 

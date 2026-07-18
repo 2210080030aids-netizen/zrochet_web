@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
-import { formatOrderStatus, orderStatusBadgeClass, ORDER_STATUS } from "@/lib/order-status";
+import { resolveOrderStageDisplay, ORDER_STATUS } from "@/lib/order-status";
 import {
   buildOrderFilterQuery,
   buildOrderWhereClause,
@@ -16,7 +16,7 @@ import { orderInvoiceDownloadPath } from "@/lib/invoice";
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ view?: string; q?: string; month?: string }>;
 }
 
 export default async function AdminOrdersPage({ searchParams }: PageProps) {
@@ -38,6 +38,8 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
         currency: true,
         status: true,
         paymentProofUrl: true,
+        shippedAt: true,
+        deliveredAt: true,
         createdAt: true,
       },
     }),
@@ -87,7 +89,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Phone</th>
                 <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Payment</th>
+                <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Download</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
@@ -107,14 +109,16 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                     {formatCartPrice(order.subtotal, order.currency)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${orderStatusBadgeClass(order.status)}`}
-                    >
-                      {formatOrderStatus(order.status)}
-                    </span>
-                    {order.paymentProofUrl && (
-                      <span className="mt-1 block text-xs text-emerald-700">Proof uploaded</span>
-                    )}
+                    {(() => {
+                      const stage = resolveOrderStageDisplay(order);
+                      return (
+                        <span
+                          className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${stage.badgeClass}`}
+                        >
+                          {stage.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3">
                     <a

@@ -29,7 +29,7 @@ function ViewStoreLink() {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminSessionGuard>
-      <div className="min-h-screen bg-cream">
+      <div className="admin-area min-h-screen bg-cream">
         <header className="border-b border-sand bg-white">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
             <Link href="/admin" className="font-display text-xl font-bold text-brown-dark">

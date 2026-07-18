@@ -34,6 +34,10 @@ yarn-error.log*
 /public/uploads/hero/*
 !/public/uploads/hero/.gitkeep
 
+# admin "Our Story" images (local only; re-upload after Railway redeploy if needed)
+/public/uploads/story/*
+!/public/uploads/story/.gitkeep
+
 # admin product uploads (served via /api/media/products)
 /public/uploads/products/*
 !/public/uploads/products/.gitkeep

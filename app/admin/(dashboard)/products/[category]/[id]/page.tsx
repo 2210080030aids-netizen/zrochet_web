@@ -5,8 +5,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
 import AdminSizeSelector, { ONE_SIZE } from "@/components/AdminSizeSelector";
+import AdminHighlightsSelector from "@/components/AdminHighlightsSelector";
+import { handleAdminUnauthorized } from "@/components/AdminSessionGuard";
 import { getProductColorFields } from "@/lib/color-variants";
 import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
+import {
+  DEFAULT_HIGHLIGHT_KEYS,
+  normalizeProductHighlights,
+  type ProductHighlightKey,
+} from "@/lib/product-highlights";
 import type { ProductMedia } from "@/lib/types";
 
 interface ProductData {
@@ -24,6 +31,7 @@ interface ProductData {
   colors: unknown;
   colorVariants: unknown;
   sizes: unknown;
+  highlights: unknown;
   media: unknown;
 }
 
@@ -63,6 +71,9 @@ export default function EditProductPage({
   const [colorSwatch, setColorSwatch] = useState("#C4A484");
   const [linkToProductId, setLinkToProductId] = useState("");
   const [sizes, setSizes] = useState<string[]>([ONE_SIZE]);
+  const [highlights, setHighlights] = useState<ProductHighlightKey[]>([
+    ...DEFAULT_HIGHLIGHT_KEYS,
+  ]);
   const [price, setPrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -110,6 +121,7 @@ export default function EditProductPage({
         setColorSwatch(colorFields.colorSwatch);
         setLinkToProductId(colorFields.linkToProductId || STANDALONE_VALUE);
         setSizes(parseProductSizes(loaded.sizes));
+        setHighlights(normalizeProductHighlights(loaded.highlights));
       });
   }, [resolved]);
 
@@ -178,6 +190,7 @@ export default function EditProductPage({
       colorName: colorName.trim(),
       colorSwatch,
       sizes,
+      highlights,
       linkToProductId:
         linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
       standalone: linkToProductId === STANDALONE_VALUE,
@@ -189,6 +202,11 @@ export default function EditProductPage({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
 
     if (!res.ok) {
       const data = await res.json();
@@ -203,9 +221,13 @@ export default function EditProductPage({
 
   async function handleDelete() {
     if (!resolved || !confirm("Delete this product?")) return;
-    await fetch(`/api/admin/products/${resolved.category}/${resolved.id}`, {
+    const res = await fetch(`/api/admin/products/${resolved.category}/${resolved.id}`, {
       method: "DELETE",
     });
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
     router.push("/admin/products");
     router.refresh();
   }
@@ -354,6 +376,9 @@ export default function EditProductPage({
             Status updates automatically: {product.quantity > 0 ? "In stock" : "Out of stock"}.
           </span>
         </label>
+
+        <AdminHighlightsSelector value={highlights} onChange={setHighlights} />
+
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex flex-wrap gap-3">
           <button

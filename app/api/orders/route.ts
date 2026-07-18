@@ -14,6 +14,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Your cart is empty" }, { status: 400 });
     }
 
+    const name = String(body.name ?? "").trim();
+    const email = String(body.email ?? "").trim();
+    const phone = String(body.phone ?? "").trim();
+    const address = String(body.address ?? "").trim();
+    const localPhone = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "").replace(/^0(?=\d{10}$)/, "");
+
+    if (name.length < 2) {
+      return NextResponse.json({ error: "Please enter a valid full name." }, { status: 400 });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+    }
+    if (!/^[6-9]\d{9}$/.test(localPhone)) {
+      return NextResponse.json({ error: "Please enter a valid 10-digit phone number." }, { status: 400 });
+    }
+    if (address.length < 10) {
+      return NextResponse.json({ error: "Please enter a complete delivery address." }, { status: 400 });
+    }
+
     const stockCheck = await validateOrderStock(items);
     if (!stockCheck.ok) {
       return NextResponse.json({ error: stockCheck.message }, { status: 400 });
@@ -23,10 +42,10 @@ export async function POST(request: Request) {
     const order = await prisma.order.create({
       data: {
         id: createDraftOrderId(),
-        name: body.name,
-        email: body.email,
-        phone: body.phone,
-        address: body.address,
+        name,
+        email,
+        phone: localPhone,
+        address,
         items: items as unknown as Prisma.InputJsonValue,
         subtotal: body.subtotal,
         currency: body.currency ?? "INR",

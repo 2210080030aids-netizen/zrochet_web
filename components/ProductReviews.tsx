@@ -177,7 +177,7 @@ export default function ProductReviews({
       date: review.date,
     }));
 
-    return [...live, ...samples];
+    return [...live, ...samples].sort((a, b) => b.rating - a.rating);
   }, [reviews, sampleReviews]);
 
   const totalPages = Math.max(1, Math.ceil(allReviews.length / PAGE_SIZE));

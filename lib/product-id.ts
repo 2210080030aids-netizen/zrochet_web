@@ -209,6 +209,7 @@ async function renameProductIdInCategory(
       colors: toJsonValue(productData.colors),
       colorVariants: toJsonValue(remapColorVariantsJson(productData.colorVariants, from, to)),
       sizes: toJsonValue(productData.sizes),
+      highlights: toJsonValue(productData.highlights),
       rating: productData.rating,
       reviewCount: productData.reviewCount,
       quantity: productData.quantity,

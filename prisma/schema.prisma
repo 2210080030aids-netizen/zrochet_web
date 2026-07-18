@@ -33,6 +33,7 @@ model Product {
   colors          Json       @default("[]")
   colorVariants   Json       @default("[]")
   sizes           Json       @default("[\"One Size\"]")
+  highlights      Json       @default("[\"freeDelivery\",\"secureCheckout\",\"easyReturns\"]")
   rating          Float      @default(4.8)
   reviewCount     Int        @default(24)
   quantity        Int        @default(0)
@@ -78,6 +79,15 @@ model SiteSettings {
   upiId      String @default("sarathbhushan04@oksbi")
   upiPayeeName String @default("Zrochet")
   instagramUrl String @default("https://www.instagram.com/zrochet_12?igsh=MWcwOTQzZzhrajh6")
+  heroEyebrow String @default("Artisan Made · One of a Kind")
+  heroTitle   String @default("Handcrafted Crochet Creations")
+  heroText    String @default("Discover beautifully handmade crochet bags, purses, and thoughtful gifts — each piece woven with care, warmth, and timeless charm.")
+  storyImage  String @default("")
+  storyTitle  String @default("The Heart of Zrochet")
+  storyText   String @default("Zrochet began with a simple belief: that everyday objects deserve the warmth of human hands. What started as a quiet hobby at the kitchen table has blossomed into a boutique studio dedicated to slow, intentional craftsmanship.\n\nEvery stitch is placed with purpose. We source soft, premium yarns in earthy tones and transform them into bags, purses, and gifts that carry a piece of our story — and soon, a piece of yours.")
+  storyPoint1 String @default("100% handmade, never mass-produced")
+  storyPoint2 String @default("Eco-conscious yarn & packaging")
+  storyPoint3 String @default("Custom orders welcome")
 }
 
 model Order {

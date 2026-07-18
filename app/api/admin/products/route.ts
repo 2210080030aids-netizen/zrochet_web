@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { syncProductColorVariants } from "@/lib/color-variants";
+import { normalizeProductHighlights } from "@/lib/product-highlights";
 import { allocateNextProductId } from "@/lib/product-id";
 import { validatePersistableMedia } from "@/lib/product-media-storage";
 import { productStockFields } from "@/lib/product-stock";
@@ -74,6 +75,9 @@ export async function POST(request: Request) {
           sizes: (Array.isArray(body.sizes) && body.sizes.length
             ? body.sizes.map(String)
             : ["One Size"]) as unknown as import("@prisma/client").Prisma.InputJsonValue,
+          highlights: normalizeProductHighlights(
+            body.highlights
+          ) as unknown as import("@prisma/client").Prisma.InputJsonValue,
         },
       });
     });

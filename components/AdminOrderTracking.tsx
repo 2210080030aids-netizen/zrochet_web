@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { handleAdminUnauthorized } from "@/components/AdminSessionGuard";
 import {
   formatTrackingDate,
   isStageCompleted,
@@ -58,6 +59,11 @@ export default function AdminOrderTracking({
         trackingId: tracking,
       }),
     });
+
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
 
     const data = await res.json();
     setLoading(null);

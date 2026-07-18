@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
 import AdminSizeSelector, { ONE_SIZE } from "@/components/AdminSizeSelector";
+import AdminHighlightsSelector from "@/components/AdminHighlightsSelector";
+import { handleAdminUnauthorized } from "@/components/AdminSessionGuard";
 import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
+import {
+  DEFAULT_HIGHLIGHT_KEYS,
+  type ProductHighlightKey,
+} from "@/lib/product-highlights";
 import type { ProductMedia } from "@/lib/types";
 
 interface Collection {
@@ -31,6 +37,9 @@ export default function NewProductPage() {
   const [colorSwatch, setColorSwatch] = useState("#C4A484");
   const [linkToProductId, setLinkToProductId] = useState("");
   const [sizes, setSizes] = useState<string[]>([ONE_SIZE]);
+  const [highlights, setHighlights] = useState<ProductHighlightKey[]>([
+    ...DEFAULT_HIGHLIGHT_KEYS,
+  ]);
   const [media, setMedia] = useState<ProductMedia[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -101,6 +110,7 @@ export default function NewProductPage() {
       colorName: colorName.trim(),
       colorSwatch,
       sizes,
+      highlights,
       linkToProductId: linkToProductId === STANDALONE_VALUE ? null : linkToProductId || null,
       standalone: linkToProductId === STANDALONE_VALUE,
       media,
@@ -111,6 +121,11 @@ export default function NewProductPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
 
     if (!res.ok) {
       const data = await res.json();
@@ -251,6 +266,9 @@ export default function NewProductPage() {
             Set to 0 to mark the product out of stock.
           </span>
         </label>
+
+        <AdminHighlightsSelector value={highlights} onChange={setHighlights} />
+
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"

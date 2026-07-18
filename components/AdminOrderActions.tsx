@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { handleAdminUnauthorized } from "@/components/AdminSessionGuard";
 import { REJECTION_REASONS, REJECTION_REASON_OTHER } from "@/lib/rejection-reasons";
 
 export default function AdminOrderActions({
@@ -44,6 +45,11 @@ export default function AdminOrderActions({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action }),
     });
+
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
 
     const data = await res.json();
     setLoading(null);
@@ -106,6 +112,11 @@ export default function AdminOrderActions({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "reject", reason }),
     });
+
+    if (res.status === 401) {
+      await handleAdminUnauthorized();
+      return;
+    }
 
     const data = await res.json();
     setLoading(null);

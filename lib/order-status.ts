@@ -23,3 +23,34 @@ export function orderStatusBadgeClass(status: string): string {
       return "bg-sand/80 text-brown-dark";
   }
 }
+
+/**
+ * Resolves the label + badge style shown in the admin "Status" column so it
+ * mirrors the fulfillment stage: Delivered / Shipped take precedence over the
+ * raw payment status, then Approved / Rejected / Awaiting review.
+ */
+export function resolveOrderStageDisplay(order: {
+  status: string;
+  shippedAt?: Date | string | null;
+  deliveredAt?: Date | string | null;
+}): { label: string; badgeClass: string } {
+  if (order.status === ORDER_STATUS.REJECTED) {
+    return { label: "Rejected", badgeClass: "bg-red-50 text-red-700" };
+  }
+  if (order.deliveredAt) {
+    return { label: "Delivered", badgeClass: "bg-purple-50 text-purple-700" };
+  }
+  if (order.shippedAt) {
+    return { label: "Shipped", badgeClass: "bg-blue-50 text-blue-700" };
+  }
+  if (order.status === ORDER_STATUS.APPROVED) {
+    return { label: "Approved", badgeClass: "bg-emerald-50 text-emerald-800" };
+  }
+  if (order.status === ORDER_STATUS.PAYMENT_SUBMITTED) {
+    return { label: "Awaiting review", badgeClass: "bg-amber-50 text-amber-800" };
+  }
+  return {
+    label: formatOrderStatus(order.status),
+    badgeClass: orderStatusBadgeClass(order.status),
+  };
+}
