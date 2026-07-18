@@ -3,6 +3,8 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { saveProductMediaFile } from "@/lib/product-media-db";
+import { productMediaPublicPath } from "@/lib/product-media-storage";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -35,13 +37,22 @@ export async function POST(request: Request) {
     const ext =
       file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
     const filename = `hero-${Date.now()}.${ext}`;
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "hero");
-    await mkdir(uploadsDir, { recursive: true });
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(uploadsDir, filename), buffer);
 
-    const heroImage = `/uploads/hero/${filename}`;
+    // Persist to the database so the image survives Railway redeploys (ephemeral disk).
+    await saveProductMediaFile(filename, file.type, buffer);
+
+    // Best-effort local cache; ignored if the filesystem is read-only/ephemeral.
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", "hero");
+      await mkdir(uploadsDir, { recursive: true });
+      await writeFile(path.join(uploadsDir, filename), buffer);
+    } catch (cacheError) {
+      console.warn("Could not cache hero image on disk:", cacheError);
+    }
+
+    const heroImage = productMediaPublicPath(filename);
     const settings = await prisma.siteSettings.upsert({
       where: { id: 1 },
       update: { heroImage },
