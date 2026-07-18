@@ -10,12 +10,23 @@ import { useState } from "react";
 
 import { formatCartPrice } from "@/lib/cart";
 import { useCart } from "@/lib/cart-context";
+import {
+  INDIAN_STATES,
+  SHIPPING_COUNTRIES,
+  composeAddress,
+  isValidIndianState,
+} from "@/lib/india-locations";
 
 interface CheckoutValues {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  country: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  pinCode: string;
 }
 
 type CheckoutErrors = Partial<Record<keyof CheckoutValues, string>>;
@@ -59,11 +70,36 @@ function validateCheckout(values: CheckoutValues): CheckoutErrors {
     errors.phone = "Enter a valid 10-digit mobile number.";
   }
 
-  const address = values.address.trim();
-  if (!address) {
-    errors.address = "Please enter your delivery address.";
-  } else if (address.length < 10) {
-    errors.address = "Please enter a complete address (street, city, PIN).";
+  if (!values.country.trim()) {
+    errors.country = "Please select your country / region.";
+  }
+
+  const addressLine1 = values.addressLine1.trim();
+  if (!addressLine1) {
+    errors.addressLine1 = "Please enter your house number and street name.";
+  } else if (addressLine1.length < 3) {
+    errors.addressLine1 = "Please enter a complete street address.";
+  }
+
+  const city = values.city.trim();
+  if (!city) {
+    errors.city = "Please enter your town / city.";
+  } else if (!/^[A-Za-z][A-Za-z\s.'-]*$/.test(city)) {
+    errors.city = "Enter a valid town / city name.";
+  }
+
+  const state = values.state.trim();
+  if (!state) {
+    errors.state = "Please select your state.";
+  } else if (!isValidIndianState(state)) {
+    errors.state = "Please select a valid state.";
+  }
+
+  const pinCode = values.pinCode.trim();
+  if (!pinCode) {
+    errors.pinCode = "Please enter your PIN code.";
+  } else if (!/^[1-9]\d{5}$/.test(pinCode)) {
+    errors.pinCode = "PIN code must be exactly 6 digits.";
   }
 
   return errors;
@@ -80,7 +116,12 @@ export default function CheckoutPageContent() {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    country: "India",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    pinCode: "",
   });
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof CheckoutValues, boolean>>>({});
@@ -152,13 +193,32 @@ export default function CheckoutPageContent() {
     e.preventDefault();
 
     const validationErrors = validateCheckout(values);
-    setTouched({ name: true, email: true, phone: true, address: true });
+    setTouched({
+      name: true,
+      email: true,
+      phone: true,
+      country: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      pinCode: true,
+    });
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
     setSubmitting(true);
+
+    const address = composeAddress({
+      addressLine1: values.addressLine1,
+      addressLine2: values.addressLine2,
+      city: values.city,
+      state: values.state,
+      pinCode: values.pinCode,
+      country: values.country,
+    });
 
     let orderId = "";
     try {
@@ -169,7 +229,13 @@ export default function CheckoutPageContent() {
           name: values.name.trim(),
           email: values.email.trim(),
           phone: toLocalPhone(values.phone),
-          address: values.address.trim(),
+          address,
+          country: values.country.trim(),
+          addressLine1: values.addressLine1.trim(),
+          addressLine2: values.addressLine2.trim(),
+          city: values.city.trim(),
+          state: values.state.trim(),
+          pinCode: values.pinCode.trim(),
           items,
           subtotal,
           currency,
@@ -359,23 +425,133 @@ export default function CheckoutPageContent() {
 
         <label className="block text-sm font-medium text-brown-dark">
 
-          Delivery Address
+          Country / Region
 
-          <textarea
+          <select
             required
-            name="address"
-            rows={3}
-            autoComplete="street-address"
-            value={values.address}
-            onChange={(e) => setField("address", e.target.value)}
-            onBlur={() => handleBlur("address")}
-            aria-invalid={Boolean(errors.address)}
+            name="country"
+            autoComplete="country-name"
+            value={values.country}
+            onChange={(e) => setField("country", e.target.value)}
+            onBlur={() => handleBlur("country")}
+            aria-invalid={Boolean(errors.country)}
             className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
-              errors.address ? "border-red-400" : "border-sand"
+              errors.country ? "border-red-400" : "border-sand"
             }`}
-            placeholder="Street, city, state, PIN"
+          >
+            {SHIPPING_COUNTRIES.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+          {errors.country && <span className="mt-1 block text-xs font-normal text-red-600">{errors.country}</span>}
+
+        </label>
+
+        <label className="block text-sm font-medium text-brown-dark">
+
+          Street address
+
+          <input
+            required
+            type="text"
+            name="addressLine1"
+            autoComplete="address-line1"
+            value={values.addressLine1}
+            onChange={(e) => setField("addressLine1", e.target.value)}
+            onBlur={() => handleBlur("addressLine1")}
+            aria-invalid={Boolean(errors.addressLine1)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.addressLine1 ? "border-red-400" : "border-sand"
+            }`}
+            placeholder="House number and street name"
           />
-          {errors.address && <span className="mt-1 block text-xs font-normal text-red-600">{errors.address}</span>}
+          {errors.addressLine1 && (
+            <span className="mt-1 block text-xs font-normal text-red-600">{errors.addressLine1}</span>
+          )}
+          <input
+            type="text"
+            name="addressLine2"
+            autoComplete="address-line2"
+            value={values.addressLine2}
+            onChange={(e) => setField("addressLine2", e.target.value)}
+            className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3 text-sm outline-none focus:border-gold"
+            placeholder="Apartment, suite, unit, etc. (optional)"
+          />
+
+        </label>
+
+        <label className="block text-sm font-medium text-brown-dark">
+
+          Town / City
+
+          <input
+            required
+            type="text"
+            name="city"
+            autoComplete="address-level2"
+            value={values.city}
+            onChange={(e) => setField("city", e.target.value)}
+            onBlur={() => handleBlur("city")}
+            aria-invalid={Boolean(errors.city)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.city ? "border-red-400" : "border-sand"
+            }`}
+            placeholder="Town / City"
+          />
+          {errors.city && <span className="mt-1 block text-xs font-normal text-red-600">{errors.city}</span>}
+
+        </label>
+
+        <label className="block text-sm font-medium text-brown-dark">
+
+          State
+
+          <select
+            required
+            name="state"
+            autoComplete="address-level1"
+            value={values.state}
+            onChange={(e) => setField("state", e.target.value)}
+            onBlur={() => handleBlur("state")}
+            aria-invalid={Boolean(errors.state)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.state ? "border-red-400" : "border-sand"
+            }`}
+          >
+            <option value="">Select a state</option>
+            {INDIAN_STATES.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+          {errors.state && <span className="mt-1 block text-xs font-normal text-red-600">{errors.state}</span>}
+
+        </label>
+
+        <label className="block text-sm font-medium text-brown-dark">
+
+          PIN Code
+
+          <input
+            required
+            type="text"
+            name="pinCode"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            maxLength={6}
+            value={values.pinCode}
+            onChange={(e) => setField("pinCode", e.target.value.replace(/\D/g, ""))}
+            onBlur={() => handleBlur("pinCode")}
+            aria-invalid={Boolean(errors.pinCode)}
+            className={`mt-2 w-full rounded-xl border bg-cream px-4 py-3 text-sm outline-none focus:border-gold ${
+              errors.pinCode ? "border-red-400" : "border-sand"
+            }`}
+            placeholder="6-digit PIN code"
+          />
+          {errors.pinCode && <span className="mt-1 block text-xs font-normal text-red-600">{errors.pinCode}</span>}
 
         </label>
 

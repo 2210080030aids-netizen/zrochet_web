@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { CartItem } from "@/lib/cart";
 import { createDraftOrderId } from "@/lib/order-id";
 import { validateOrderStock } from "@/lib/product-stock";
+import { composeAddress, isValidIndianState } from "@/lib/india-locations";
 
 export async function POST(request: Request) {
   try {
@@ -17,8 +18,14 @@ export async function POST(request: Request) {
     const name = String(body.name ?? "").trim();
     const email = String(body.email ?? "").trim();
     const phone = String(body.phone ?? "").trim();
-    const address = String(body.address ?? "").trim();
     const localPhone = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "").replace(/^0(?=\d{10}$)/, "");
+
+    const country = String(body.country ?? "India").trim() || "India";
+    const addressLine1 = String(body.addressLine1 ?? "").trim();
+    const addressLine2 = String(body.addressLine2 ?? "").trim();
+    const city = String(body.city ?? "").trim();
+    const state = String(body.state ?? "").trim();
+    const pinCode = String(body.pinCode ?? "").trim();
 
     if (name.length < 2) {
       return NextResponse.json({ error: "Please enter a valid full name." }, { status: 400 });
@@ -29,9 +36,27 @@ export async function POST(request: Request) {
     if (!/^[6-9]\d{9}$/.test(localPhone)) {
       return NextResponse.json({ error: "Please enter a valid 10-digit phone number." }, { status: 400 });
     }
-    if (address.length < 10) {
-      return NextResponse.json({ error: "Please enter a complete delivery address." }, { status: 400 });
+    if (addressLine1.length < 3) {
+      return NextResponse.json({ error: "Please enter a complete street address." }, { status: 400 });
     }
+    if (city.length < 2) {
+      return NextResponse.json({ error: "Please enter a valid town / city." }, { status: 400 });
+    }
+    if (!isValidIndianState(state)) {
+      return NextResponse.json({ error: "Please select a valid state." }, { status: 400 });
+    }
+    if (!/^[1-9]\d{5}$/.test(pinCode)) {
+      return NextResponse.json({ error: "Please enter a valid 6-digit PIN code." }, { status: 400 });
+    }
+
+    const address = composeAddress({
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      pinCode,
+      country,
+    });
 
     const stockCheck = await validateOrderStock(items);
     if (!stockCheck.ok) {
@@ -46,6 +71,12 @@ export async function POST(request: Request) {
         email,
         phone: localPhone,
         address,
+        country,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        pinCode,
         items: items as unknown as Prisma.InputJsonValue,
         subtotal: body.subtotal,
         currency: body.currency ?? "INR",

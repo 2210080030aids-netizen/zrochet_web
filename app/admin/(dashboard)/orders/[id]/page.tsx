@@ -27,6 +27,12 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
       email: true,
       phone: true,
       address: true,
+      country: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      pinCode: true,
       items: true,
       subtotal: true,
       currency: true,
@@ -92,10 +98,38 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
               <dt className="text-text-muted">Phone</dt>
               <dd>{order.phone}</dd>
             </div>
-            <div>
-              <dt className="text-text-muted">Address</dt>
-              <dd className="whitespace-pre-wrap">{order.address}</dd>
-            </div>
+            {order.addressLine1 ? (
+              <>
+                <div>
+                  <dt className="text-text-muted">Street address</dt>
+                  <dd className="font-medium text-brown-dark">{order.addressLine1}</dd>
+                  {order.addressLine2 && <dd>{order.addressLine2}</dd>}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <dt className="text-text-muted">Town / City</dt>
+                    <dd>{order.city || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">State</dt>
+                    <dd>{order.state || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">PIN Code</dt>
+                    <dd>{order.pinCode || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Country</dt>
+                    <dd>{order.country || "—"}</dd>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div>
+                <dt className="text-text-muted">Address</dt>
+                <dd className="whitespace-pre-wrap">{order.address}</dd>
+              </div>
+            )}
           </dl>
         </div>
 

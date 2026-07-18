@@ -96,6 +96,12 @@ model Order {
   email         String
   phone         String
   address       String
+  country       String    @default("India")
+  addressLine1  String    @default("")
+  addressLine2  String    @default("")
+  city          String    @default("")
+  state         String    @default("")
+  pinCode       String    @default("")
   items         Json
   subtotal      Int
   currency      String    @default("INR")

@@ -246,7 +246,7 @@ function PaymentContent() {
         <p className="font-display text-4xl font-semibold text-brown-dark">
           {formatCartPrice(amount, "INR")}
         </p>
-        <p className="mt-1 text-xs text-text-muted">Amount is pre-filled when you scan</p>
+        <p className="mt-1 text-xs text-text-muted">Scan with any UPI app</p>
 
         <div className="mx-auto mt-6 flex h-[280px] w-[280px] items-center justify-center rounded-xl border border-sand bg-cream">
           {error ? (
