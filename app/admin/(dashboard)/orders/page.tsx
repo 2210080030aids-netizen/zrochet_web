@@ -12,6 +12,7 @@ import {
 } from "@/lib/order-filters";
 import AdminOrdersFilters from "@/components/AdminOrdersFilters";
 import { orderInvoiceDownloadPath } from "@/lib/invoice";
+import { withAdminKey } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -130,7 +131,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/admin/orders/${order.id}`}
+                      href={withAdminKey(`/admin/orders/${order.id}`)}
                       className="font-medium text-brown transition hover:text-brown-dark"
                     >
                       View

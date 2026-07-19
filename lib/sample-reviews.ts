@@ -31,11 +31,20 @@ const DEFAULT_REVIEWS: SampleReview[] = [
   },
   {
     id: "default-3",
-    author: "Sarah K.",
+    author: "Anjali K.",
     rating: 4,
     date: "January 2026",
     title: "Lovely bag, unique design",
     body: "Such a unique piece. Slightly smaller than I imagined but perfect for evenings out. Would buy again.",
+    verified: true,
+  },
+  {
+    id: "default-4",
+    author: "Kavya N.",
+    rating: 5,
+    date: "December 2025",
+    title: "Beautifully made and durable",
+    body: "The finish feels premium and the stitching is neat throughout. Exactly what I hoped for — will be gifting one too.",
     verified: true,
   },
 ];
@@ -156,6 +165,15 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       body: "Stitch work is immaculate. White sections need a little care but that's expected with crochet — still love it.",
       verified: true,
     },
+    {
+      id: "b5-4",
+      author: "Radhika V.",
+      rating: 5,
+      date: "December 2025",
+      title: "A conversation starter",
+      body: "The monochrome swirl is such a statement. Sturdy build and the strap sits comfortably — worth every rupee.",
+      verified: true,
+    },
   ],
   ob2: [
     {
@@ -214,6 +232,15 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       body: "Premium finish for a crochet bag. A touch dressier than my everyday pieces — exactly what I needed.",
       verified: true,
     },
+    {
+      id: "b3-4",
+      author: "Bhavana P.",
+      rating: 5,
+      date: "December 2025",
+      title: "Perfect for celebrations",
+      body: "Carried it to an engagement and it complemented my outfit beautifully. The champagne shade is so elegant.",
+      verified: true,
+    },
   ],
   pb2: [
     {
@@ -236,7 +263,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
     },
     {
       id: "b4-3",
-      author: "Emily D.",
+      author: "Nandini D.",
       rating: 4,
       date: "January 2026",
       title: "Sophisticated party bag",
@@ -272,6 +299,15 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
       body: "Tan colour pairs with denim and neutrals. Strap length works for my height — would love an adjustable option though.",
       verified: true,
     },
+    {
+      id: "b7-4",
+      author: "Deepa N.",
+      rating: 5,
+      date: "December 2025",
+      title: "My everyday crossbody",
+      body: "Lightweight, roomy enough for daily essentials, and the crochet texture looks lovely. I reach for it constantly.",
+      verified: true,
+    },
   ],
   sb2: [
     {
@@ -285,7 +321,7 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
     },
     {
       id: "b8-2",
-      author: "Freya L.",
+      author: "Sanjana L.",
       rating: 5,
       date: "February 2026",
       title: "Lightweight companion",
@@ -326,9 +362,151 @@ const PRODUCT_SAMPLE_REVIEWS: Record<string, SampleReview[]> = {
   ],
 };
 
-export function getSampleReviewsForProduct(productId: string): SampleReview[] {
+/**
+ * Pool of Indian reviewer names used to give products without hand-written
+ * sample reviews a varied, non-repeating set of authors.
+ */
+const REVIEWER_NAME_POOL: string[] = [
+  "Aarav S.",
+  "Aditi C.",
+  "Akshay R.",
+  "Ananya R.",
+  "Anjali K.",
+  "Bhavana P.",
+  "Chitra V.",
+  "Deepa N.",
+  "Divya K.",
+  "Gauri M.",
+  "Harini S.",
+  "Ishita L.",
+  "Jaya T.",
+  "Karan B.",
+  "Kavya N.",
+  "Lakshmi R.",
+  "Madhavi J.",
+  "Meera S.",
+  "Nandini D.",
+  "Neha W.",
+  "Nikhil A.",
+  "Pallavi G.",
+  "Pooja H.",
+  "Priya M.",
+  "Radhika V.",
+  "Rhea P.",
+  "Ritika S.",
+  "Rohan K.",
+  "Sanjana L.",
+  "Shruti B.",
+  "Sneha V.",
+  "Swati D.",
+  "Tanvi G.",
+  "Varsha M.",
+  "Vidya R.",
+  "Yamini S.",
+];
+
+/** Stable 32-bit hash (FNV-1a) so the same product always maps to the same names. */
+function hashProductKey(key: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < key.length; i += 1) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+/** Seeded PRNG (mulberry32) for deterministic shuffling. */
+function mulberry32(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Pick `count` distinct names from the pool, deterministically per product key. */
+function pickReviewerNames(key: string, count: number): string[] {
+  const pool = [...REVIEWER_NAME_POOL];
+  const random = mulberry32(hashProductKey(key));
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
+
+/** Build the fallback reviews for a product with fresh, product-specific author names. */
+function buildDefaultReviewsForProduct(key: string): SampleReview[] {
+  const names = pickReviewerNames(key, DEFAULT_REVIEWS.length);
+  return DEFAULT_REVIEWS.map((review, index) => ({
+    ...review,
+    id: `${key}-default-${index + 1}`,
+    author: names[index] ?? review.author,
+  }));
+}
+
+interface ProductReviewMeta {
+  /** Headline star rating shown for the product (before any live reviews). */
+  baseRating: number;
+  /** Number of built-in sample comments to display. */
+  count: number;
+}
+
+/** Per-product baseline rating + built-in comment count (varied, all >= 4.5). */
+const PRODUCT_REVIEW_META: Record<string, ProductReviewMeta> = {
+  hb1: { baseRating: 4.6, count: 3 },
+  mb1: { baseRating: 4.7, count: 3 },
+  mb2: { baseRating: 4.5, count: 2 },
+  ob1: { baseRating: 4.6, count: 4 },
+  ob2: { baseRating: 4.7, count: 2 },
+  pb1: { baseRating: 4.5, count: 4 },
+  pb2: { baseRating: 4.6, count: 3 },
+  sb1: { baseRating: 4.7, count: 4 },
+  sb2: { baseRating: 4.5, count: 2 },
+};
+
+/** Choices used to vary new products deterministically. All ratings stay >= 4.5. */
+const FALLBACK_RATING_CHOICES = [4.5, 4.6, 4.7];
+const FALLBACK_COUNT_CHOICES = [2, 3, 4];
+
+const DEFAULT_BASE_RATING = 4.6;
+
+export interface SampleReviewSummary {
+  reviews: SampleReview[];
+  baseRating: number;
+}
+
+/** Resolve the built-in comments and headline rating for a product. */
+export function getSampleReviewSummary(productId: string): SampleReviewSummary {
   const key = normalizeProductId(productId);
-  return PRODUCT_SAMPLE_REVIEWS[key] ?? DEFAULT_REVIEWS;
+  const explicit = PRODUCT_SAMPLE_REVIEWS[key];
+
+  if (explicit) {
+    const meta = PRODUCT_REVIEW_META[key];
+    const count = meta?.count ?? explicit.length;
+    return {
+      reviews: explicit.slice(0, count),
+      baseRating: meta?.baseRating ?? DEFAULT_BASE_RATING,
+    };
+  }
+
+  // New products: deterministically pick a rating and comment count so each
+  // product looks different but stays stable across renders.
+  const hash = hashProductKey(key);
+  const baseRating = FALLBACK_RATING_CHOICES[hash % FALLBACK_RATING_CHOICES.length];
+  const count =
+    FALLBACK_COUNT_CHOICES[Math.floor(hash / FALLBACK_RATING_CHOICES.length) % FALLBACK_COUNT_CHOICES.length];
+
+  return {
+    reviews: buildDefaultReviewsForProduct(key).slice(0, count),
+    baseRating,
+  };
+}
+
+export function getSampleReviewsForProduct(productId: string): SampleReview[] {
+  return getSampleReviewSummary(productId).reviews;
 }
 
 /** @deprecated Use getSampleReviewsForProduct instead */

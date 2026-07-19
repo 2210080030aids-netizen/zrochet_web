@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE } from "@/lib/admin-auth";
+import { ADMIN_COOKIE, getAdminLoginKey } from "@/lib/admin-auth";
 
 function clearCookie(response: NextResponse) {
   response.cookies.set(ADMIN_COOKIE, "", {
@@ -22,7 +22,10 @@ export async function POST(request: Request) {
     return response;
   }
 
-  const response = NextResponse.redirect(new URL("/admin/login", origin));
+  const loginUrl = new URL("/admin/login", origin);
+  loginUrl.searchParams.set("key", getAdminLoginKey());
+  // 303 forces the browser to GET the login page after the POST logout.
+  const response = NextResponse.redirect(loginUrl, 303);
   clearCookie(response);
   return response;
 }

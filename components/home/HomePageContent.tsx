@@ -190,16 +190,16 @@ export default async function HomePageContent() {
               {
                 quote:
                   "The tote bag I ordered is absolutely stunning. You can feel the love in every stitch.",
-                name: "Emily R.",
+                name: "Ananya R.",
               },
               {
                 quote:
                   "I bought the crochet flower bouquet as a gift — truly a work of art, delicate and beautiful.",
-                name: "Sophia M.",
+                name: "Sneha M.",
               },
               {
                 quote: "Quality beyond expectations. Zrochet has a customer for life!",
-                name: "Danielle K.",
+                name: "Divya K.",
               },
             ].map((item) => (
               <blockquote

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSampleReviewsForProduct } from "@/lib/sample-reviews";
-import { computeReviewStats, type ReviewStats } from "@/lib/review-stats";
+import { resolveDisplayReviewStats, type ReviewStats } from "@/lib/review-stats";
 
 interface ProductReview {
   id: string;
@@ -123,10 +123,10 @@ export default function ProductReviews({
   const [rating, setRating] = useState(5);
 
   function emitStats(liveReviews: ProductReview[]) {
-    const stats = computeReviewStats([
-      ...liveReviews.map((review) => review.rating),
-      ...sampleReviews.map((review) => review.rating),
-    ]);
+    const stats = resolveDisplayReviewStats(
+      productId,
+      liveReviews.map((review) => review.rating)
+    );
     onStatsChange?.(stats);
   }
 

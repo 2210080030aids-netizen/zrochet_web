@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { withAdminKey } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function AdminCollectionsPage() {
           <p className="mt-2 text-text-muted">{collections.length} collections</p>
         </div>
         <Link
-          href="/admin/collections/new"
+          href={withAdminKey("/admin/collections/new")}
           className="rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
         >
           Add Collection
@@ -43,7 +44,7 @@ export default async function AdminCollectionsPage() {
                   <td className="px-4 py-3">{collection._count.products}</td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/admin/collections/${collection.slug}`}
+                      href={withAdminKey(`/admin/collections/${collection.slug}`)}
                       className="font-medium text-brown transition hover:text-brown-dark"
                     >
                       Edit

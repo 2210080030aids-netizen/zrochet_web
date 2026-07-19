@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import AdminProductsFilters from "@/components/AdminProductsFilters";
 import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
+import { withAdminKey } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
           </p>
         </div>
         <Link
-          href="/admin/products/new"
+          href={withAdminKey("/admin/products/new")}
           className="rounded-full bg-brown-dark px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-brown"
         >
           Add Product
@@ -93,7 +94,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/admin/products/${product.categorySlug}/${product.productId}`}
+                      href={withAdminKey(`/admin/products/${product.categorySlug}/${product.productId}`)}
                       className="font-medium text-brown transition hover:text-brown-dark"
                     >
                       Edit

@@ -8,9 +8,11 @@ import {
   hasActiveOrderFilters,
   parseOrderFilters,
 } from "@/lib/order-filters";
+import { useAdminHref } from "@/components/AdminKeyProvider";
 
 export default function AdminOrdersFilters() {
   const router = useRouter();
+  const adminHref = useAdminHref();
   const searchParams = useSearchParams();
   const current = parseOrderFilters({
     view: searchParams.get("view") ?? undefined,
@@ -28,12 +30,12 @@ export default function AdminOrdersFilters() {
       q: next.q ?? current.q,
       month: next.month ?? current.month,
     });
-    router.push(`/admin/orders${buildOrderFilterQuery(filters)}`);
+    router.push(adminHref(`/admin/orders${buildOrderFilterQuery(filters)}`));
   }
 
   function clearFilters() {
     setSearch("");
-    router.push("/admin/orders");
+    router.push(adminHref("/admin/orders"));
   }
 
   return (

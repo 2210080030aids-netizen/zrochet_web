@@ -7,6 +7,7 @@ import AdminProductMediaUpload from "@/components/AdminProductMediaUpload";
 import AdminSizeSelector, { ONE_SIZE } from "@/components/AdminSizeSelector";
 import AdminHighlightsSelector from "@/components/AdminHighlightsSelector";
 import { handleAdminUnauthorized } from "@/components/AdminSessionGuard";
+import { useAdminHref } from "@/components/AdminKeyProvider";
 import { getProductColorFields } from "@/lib/color-variants";
 import { isEphemeralMediaSrc } from "@/lib/product-media-storage";
 import {
@@ -63,6 +64,7 @@ export default function EditProductPage({
   params: Promise<{ category: string; id: string }>;
 }) {
   const router = useRouter();
+  const adminHref = useAdminHref();
   const [resolved, setResolved] = useState<{ category: string; id: string } | null>(null);
   const [product, setProduct] = useState<ProductData | null>(null);
   const [siblingProducts, setSiblingProducts] = useState<SiblingProduct[]>([]);
@@ -215,7 +217,7 @@ export default function EditProductPage({
       return;
     }
 
-    router.push("/admin/products");
+    router.push(adminHref("/admin/products"));
     router.refresh();
   }
 
@@ -228,7 +230,7 @@ export default function EditProductPage({
       await handleAdminUnauthorized();
       return;
     }
-    router.push("/admin/products");
+    router.push(adminHref("/admin/products"));
     router.refresh();
   }
 
@@ -238,7 +240,7 @@ export default function EditProductPage({
 
   return (
     <div>
-      <Link href="/admin/products" className="text-sm text-brown hover:text-brown-dark">
+      <Link href={adminHref("/admin/products")} className="text-sm text-brown hover:text-brown-dark">
         ← Back to products
       </Link>
       <h1 className="font-display mt-4 text-3xl font-semibold text-brown-dark">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAdminHref } from "@/components/AdminKeyProvider";
 
 interface Collection {
   slug: string;
@@ -12,6 +13,7 @@ interface Collection {
 
 export default function EditCollectionPage() {
   const router = useRouter();
+  const adminHref = useAdminHref();
   const params = useParams();
   const slug = String(params.slug);
   const [collection, setCollection] = useState<Collection | null>(null);
@@ -49,7 +51,7 @@ export default function EditCollectionPage() {
       return;
     }
 
-    router.push("/admin/collections");
+    router.push(adminHref("/admin/collections"));
     router.refresh();
   }
 
@@ -88,7 +90,7 @@ export default function EditCollectionPage() {
       return;
     }
 
-    router.push("/admin/collections");
+    router.push(adminHref("/admin/collections"));
     router.refresh();
   }
 
@@ -98,7 +100,7 @@ export default function EditCollectionPage() {
 
   return (
     <div>
-      <Link href="/admin/collections" className="text-sm text-brown hover:text-brown-dark">
+      <Link href={adminHref("/admin/collections")} className="text-sm text-brown hover:text-brown-dark">
         ← Back to collections
       </Link>
       <h1 className="font-display mt-4 text-3xl font-semibold text-brown-dark">Edit Collection</h1>

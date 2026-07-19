@@ -10,6 +10,7 @@ import { orderPaymentProofPath } from "@/lib/payment-proof";
 import { ORDER_STATUS } from "@/lib/order-status";
 import type { CartItem } from "@/lib/cart";
 import { orderInvoiceDownloadPath } from "@/lib/invoice";
+import { withAdminKey } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
 
   return (
     <div>
-      <Link href="/admin/orders" className="text-sm text-brown hover:text-brown-dark">
+      <Link href={withAdminKey("/admin/orders")} className="text-sm text-brown hover:text-brown-dark">
         ← Back to orders
       </Link>
 

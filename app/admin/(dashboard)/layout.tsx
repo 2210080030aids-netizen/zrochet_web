@@ -1,10 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import AdminSessionGuard, {
-  ADMIN_SESSION_FLAG,
-  logoutAdminAndGoToStore,
-} from "@/components/AdminSessionGuard";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { getAdminSession, getAdminLoginKey } from "@/lib/admin-auth";
+import AdminSessionGuard from "@/components/AdminSessionGuard";
+import AdminHeaderActions from "@/components/AdminHeaderActions";
+import { AdminKeyProvider } from "@/components/AdminKeyProvider";
 
 const NAV = [
   { href: "/admin", label: "Dashboard" },
@@ -14,45 +14,39 @@ const NAV = [
   { href: "/admin/settings", label: "Settings" },
 ];
 
-function ViewStoreLink() {
-  return (
-    <button
-      type="button"
-      onClick={() => void logoutAdminAndGoToStore()}
-      className="text-sm text-text-muted transition hover:text-brown-dark"
-    >
-      View Store
-    </button>
-  );
-}
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Only allowlisted admins can see this area; everyone else gets a 404.
+  const session = await getAdminSession();
+  if (!session) {
+    notFound();
+  }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const adminKey = getAdminLoginKey();
+
+  // The secret key must be present and exactly correct in the URL on every admin
+  // route. If even one letter is missing or wrong, show our styled "page not found".
+  const headerStore = await headers();
+  const urlKey = headerStore.get("x-admin-url-key") ?? "";
+  if (urlKey !== adminKey) {
+    notFound();
+  }
+
+  // Carry the secret key in the URL as the admin navigates.
+  const keyQuery = `?key=${encodeURIComponent(adminKey)}`;
+
   return (
     <AdminSessionGuard>
+      <AdminKeyProvider adminKey={adminKey}>
       <div className="admin-area min-h-screen bg-cream">
         <header className="border-b border-sand bg-white">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-            <Link href="/admin" className="font-display text-xl font-bold text-brown-dark">
+            <Link
+              href={`/admin${keyQuery}`}
+              className="font-display text-xl font-bold text-brown-dark"
+            >
               Zrochet Admin
             </Link>
-            <div className="flex items-center gap-4">
-              <ViewStoreLink />
-              <form action="/api/admin/logout" method="POST">
-                <button
-                  type="submit"
-                  onClick={() => {
-                    try {
-                      sessionStorage.removeItem(ADMIN_SESSION_FLAG);
-                    } catch {
-                      // ignore
-                    }
-                  }}
-                  className="text-sm font-medium text-brown transition hover:text-brown-dark"
-                >
-                  Logout
-                </button>
-              </form>
-            </div>
+            <AdminHeaderActions />
           </div>
         </header>
 
@@ -61,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {NAV.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={`${item.href}${keyQuery}`}
                 className="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-text-muted transition hover:bg-beige hover:text-brown-dark"
               >
                 {item.label}
@@ -71,6 +65,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div>{children}</div>
         </div>
       </div>
+      </AdminKeyProvider>
     </AdminSessionGuard>
   );
 }

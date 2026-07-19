@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCartPrice } from "@/lib/cart";
 import { ORDER_STATUS } from "@/lib/order-status";
 import { PLACED_ORDER_WHERE } from "@/lib/order-filters";
+import { withAdminKey } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function AdminDashboardPage() {
         ].map((stat) => (
           <Link
             key={stat.label}
-            href={stat.href}
+            href={withAdminKey(stat.href)}
             className="rounded-2xl border border-sand bg-white p-6 transition hover:luxury-shadow"
           >
             <p className="text-sm text-text-muted">{stat.label}</p>
@@ -68,7 +69,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium">{formatCartPrice(order.subtotal, order.currency)}</p>
-                  <Link href={`/admin/orders/${order.id}`} className="text-xs capitalize text-brown">
+                  <Link href={withAdminKey(`/admin/orders/${order.id}`)} className="text-xs capitalize text-brown">
                     {order.status.replace(/_/g, " ")} →
                   </Link>
                 </div>
