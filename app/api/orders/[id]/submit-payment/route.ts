@@ -10,7 +10,7 @@ import {
   isUniqueConstraintError,
 } from "@/lib/order-id";
 import { orderPaymentProofPath } from "@/lib/payment-proof";
-import { sendPaymentReceivedEmail } from "@/lib/email";
+import { sendPaymentReceivedEmail, sendNewOrderAdminEmail } from "@/lib/email";
 import { deductStockForOrder } from "@/lib/product-stock";
 import type { CartItem } from "@/lib/cart";
 
@@ -147,6 +147,28 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     if (!emailResult.sent) {
       console.warn("Payment received email failed:", emailResult.error);
+    }
+
+    // Admin alert uses the final ODZ order ID (assigned above when payment is submitted).
+    // Skip on payment re-upload so the inbox isn't spammed.
+    if (order.status !== ORDER_STATUS.PAYMENT_SUBMITTED) {
+      try {
+        const adminEmailResult = await sendNewOrderAdminEmail({
+          orderId: placed.id,
+          customerName: placed.name,
+          customerEmail: placed.email,
+          customerPhone: placed.phone,
+          address: placed.address,
+          items: placed.items as unknown as CartItem[],
+          subtotal: placed.subtotal,
+          currency: placed.currency,
+        });
+        if (!adminEmailResult.sent) {
+          console.warn("New-order admin email not sent:", adminEmailResult.error);
+        }
+      } catch (adminEmailError) {
+        console.error("New-order admin email failed:", adminEmailError);
+      }
     }
 
     return NextResponse.json({

@@ -37,11 +37,19 @@ export function goToStore() {
 }
 
 /**
- * Call when an admin API responds 401. The server cookie is gone/invalid, so
- * clear any client flag and send the admin home. (The login page is a secret
- * URL, so we don't bounce there automatically.)
+ * Call when an admin API responds 401. Clear the session and return to the
+ * secret login URL (keeping the key from the current address bar when present).
  */
 export async function handleAdminUnauthorized() {
   await clearAdminSession();
-  window.location.replace("/");
+  let loginUrl = "/admin/login";
+  try {
+    const key = new URLSearchParams(window.location.search).get("key");
+    if (key) {
+      loginUrl = `/admin/login?key=${encodeURIComponent(key)}`;
+    }
+  } catch {
+    // ignore
+  }
+  window.location.replace(loginUrl);
 }

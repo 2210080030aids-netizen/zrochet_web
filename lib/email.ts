@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
 import { getSiteUrl } from "@/lib/env";
+import { getAdminLoginKey } from "@/lib/admin-auth";
 import type { CartItem } from "@/lib/cart";
 
 export interface ThankYouEmailOptions {
@@ -581,6 +582,99 @@ export async function sendPaymentReceivedEmail(options: {
     ctaLabel: "Track My Order",
     ctaHref: `${getSiteUrl()}/track?orderId=${encodeURIComponent(options.orderId)}`,
   });
+}
+
+/** Admin inbox that receives a notice when a customer places a new order. */
+export function getAdminNotifyEmail(): string {
+  return readEnv("ADMIN_NOTIFY_EMAIL") || "contact.zrochet@gmail.com";
+}
+
+export interface NewOrderAdminEmailOptions {
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address: string;
+  items: CartItem[];
+  subtotal: number;
+  currency: string;
+}
+
+function buildNewOrderAdminHtml(options: NewOrderAdminEmailOptions): string {
+  const siteUrl = getSiteUrl().replace(/\/$/, "");
+  const adminLoginUrl = `${siteUrl}/admin/login?key=${encodeURIComponent(getAdminLoginKey())}`;
+  const total = formatMoney(options.subtotal, options.currency);
+  const itemRows = options.items
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding:8px 0;border-bottom:1px solid #E8DFD4;">${item.name}${item.size ? ` (${item.size})` : ""}</td>
+        <td style="padding:8px 8px;border-bottom:1px solid #E8DFD4;text-align:center;">${item.quantity}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #E8DFD4;text-align:right;">${formatMoney(item.price * item.quantity, item.currency)}</td>
+      </tr>`
+    )
+    .join("");
+
+  return `
+    <div style="font-family: Georgia, serif; color: #3D2B1F; max-width: 560px; line-height: 1.6;">
+      <h1 style="font-size: 24px; margin-bottom: 8px;">New order placed</h1>
+      <p>A customer just placed an order on Zrochet.</p>
+
+      <p style="margin-top: 20px;"><strong>Order ID:</strong> ${options.orderId}</p>
+      <p><strong>Customer:</strong> ${options.customerName}</p>
+      <p><strong>Email:</strong> ${options.customerEmail}</p>
+      <p><strong>Phone:</strong> ${options.customerPhone}</p>
+
+      <table style="width:100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;">
+        <thead>
+          <tr style="text-align:left; color: #8B7355;">
+            <th style="padding-bottom:8px;">Product</th>
+            <th style="padding-bottom:8px;text-align:center;">Qty</th>
+            <th style="padding-bottom:8px;text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" style="padding-top:12px;font-weight:bold;">Total</td>
+            <td style="padding-top:12px;text-align:right;font-weight:bold;">${total}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p><strong>Shipping address:</strong><br/>${options.address.replace(/\n/g, "<br/>")}</p>
+
+      <p style="margin-top: 24px;">
+        <a href="${adminLoginUrl}" style="display: inline-block; background: #3D2B1F; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 999px; font-size: 14px;">
+          View orders
+        </a>
+      </p>
+    </div>
+  `;
+}
+
+/** Notify the admin when a customer places a new order (product, qty, address). */
+export async function sendNewOrderAdminEmail(
+  options: NewOrderAdminEmailOptions
+): Promise<{ sent: boolean; error?: string; provider?: string }> {
+  const provider = getEmailProvider();
+  if (!provider) {
+    console.warn("Email not configured — skipping new-order admin email.");
+    return {
+      sent: false,
+      error: getEmailConfigStatus().hint,
+      provider: "none",
+    };
+  }
+
+  const result = await dispatchEmail({
+    to: getAdminNotifyEmail(),
+    subject: `New order — ${options.orderId} (${options.customerName})`,
+    html: buildNewOrderAdminHtml(options),
+    replyTo: options.customerEmail,
+  });
+
+  return { ...result, provider };
 }
 
 export async function sendShippedEmail(options: {
